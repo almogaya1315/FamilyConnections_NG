@@ -1,0 +1,16 @@
+<header>
+  <nav class="navbar">
+    <div class="container-fluid">
+
+      <a class="navbar-brand" [routerLink]="['/home']">Family Connections</a>
+
+      <div class="navbar-collapse">
+        <ul class="navbar-nav">
+          <li>
+            <a class="nav-link" *ngIf="currentPerson" (click)="signOut()">Leave</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
