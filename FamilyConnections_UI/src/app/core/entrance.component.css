@@ -1,0 +1,13 @@
+.addPersonLink {
+  border: solid 1px;
+  padding: 10px 50px 10px 50px;
+  position: relative;
+  top: 5px;
+  text-decoration: unset
+}
+
+.enterBtn {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0px 0px 3px 0px;
+}

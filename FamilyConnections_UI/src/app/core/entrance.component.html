@@ -1,0 +1,22 @@
+<div class="text-center">
+  <h1 class="display-4">Add yourself to the connections pool!</h1>
+  <p style="margin-top:15px">Connecting to one person is enough!</p>
+
+  <br />
+  <a class="addPersonLink"  [routerLink]="['/addPerson']">ADD</a>
+
+  <br />
+  <div style="margin-top:30px">OR SELECT</div>
+
+  <form #enterForm="ngForm" (ngSubmit)="enter(enterForm.value)">
+    <select required name="select" type="select" [(ngModel)]="selectedPerson" style="width:80px; margin-top:5px">
+      <option value="-1" disabled selected>Person</option>
+      <option *ngFor="let person of personsOptions" [ngValue]="person.value">{{person.text}}</option>
+    </select>
+    <div style="position:relative; top:5px">
+      AND <button type="submit" class="btn btn-link enterBtn" [disabled]="enterForm.invalid || selectedPerson === '-1'">
+        ENTER
+      </button>
+    </div>
+  </form>
+</div>
