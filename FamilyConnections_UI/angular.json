@@ -64,7 +64,8 @@
               "browserTarget": "FamilyConnections_UI:build:production"
             },
             "development": {
-              "browserTarget": "FamilyConnections_UI:build:development"
+              "browserTarget": "FamilyConnections_UI:build:development",
+              "proxyConfig": "src/proxy.config.json"
             }
           },
           "defaultConfiguration": "development",

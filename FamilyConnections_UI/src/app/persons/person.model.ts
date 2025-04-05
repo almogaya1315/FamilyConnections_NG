@@ -3,10 +3,10 @@ export interface IPerson {
   FullName: string,
   DateOfBirth: Date,
   DateOfBirthStr: string,
+  Age: number,
   PlaceOfBirth: string,
   Gender: number,
-  Age: number,
-  //FlatConnections: any[]
+  FlatConnections: any[]
 }
 
 export enum eGender {
@@ -17,5 +17,10 @@ export enum eGender {
 export interface IPersonOption {
   text: string,
   value: number
+}
+
+export interface IdToName {
+  Id: number,
+  Name: string
 }
 

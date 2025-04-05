@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router'
-import { delay } from 'rxjs';
+import { delay, Observable } from 'rxjs';
 
 import { eGender, IPerson, IPersonOption } from '../persons/person.model';
 import { PersonsRepositoryService } from '../persons/persons-repository.service';
@@ -13,16 +13,12 @@ import { CacheService, eStorageKeys, eStorageType } from '../services/cache.serv
 })
 export class EntranceComponent implements OnInit {
   selectedPerson: string | null = '-1';
-
   personsOptions: IPersonOption[] = [];
-  //[ { text: 'Lior', value: 1 },
-  //{ text: 'Keren', value: 2 } ];
 
   constructor(private router: Router, private cacheSvc: CacheService, private personsRepo: PersonsRepositoryService) { }
 
   ngOnInit() {
-    var persons = this.personsRepo.getPersons();
-    persons.subscribe((personsData) => {
+    this.personsRepo.getPersons().subscribe((personsData) => {
       if (personsData) {
         this.personsOptions = personsData.map(p => ({
           text: p.FullName,
