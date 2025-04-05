@@ -1,0 +1,6 @@
+[{"Id":1,"FullName":"Lior Matsliah","DateOfBirth":"1985-05-23T00:00:00","DateOfBirthStr":"23/05/1985","PlaceOfBirth":"Israel","Gender":0}
+ {"Id":2,"FullName":"Keren Matsliah","DateOfBirth":"1984-02-05T00:00:00","DateOfBirthStr":"05/02/1984","PlaceOfBirth":"Israel","Gender":1}
+ {"Id":3,"FullName":"Gaya Matsliah","DateOfBirth":"2013-06-06T00:00:00","DateOfBirthStr":"06/06/2013","PlaceOfBirth":"Israel","Gender":1}
+ {"Id":4,"FullName":"Almog Matsliah","DateOfBirth":"2015-03-26T00:00:00","DateOfBirthStr":"26/03/2015","PlaceOfBirth":"Israel","Gender":1}
+ {"Id":5,"FullName":"Racheli Paz","DateOfBirth":"1996-03-12T12:49:00","DateOfBirthStr":"12/03/1996","PlaceOfBirth":"Israel","Gender":1,"Age":29.0}
+ {"Id":6,"FullName":"Lidor Paz","DateOfBirth":"1997-02-06T16:14:00","DateOfBirthStr":"06/02/1997","PlaceOfBirth":"Israel","Gender":0,"Age":28.0}]

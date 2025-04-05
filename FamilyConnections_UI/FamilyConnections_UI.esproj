@@ -9,5 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\shared\" />
+    <Folder Include="src\assets\texts\" />
+    <Folder Include="src\assets\images\" />
   </ItemGroup>
 </Project>

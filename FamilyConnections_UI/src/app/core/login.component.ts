@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { delay } from 'rxjs';
+import { IPersonOption } from '../persons/person.model';
 
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
 
@@ -13,7 +14,7 @@ export class LoginComponent {
   credentials: any = {};
 
   constructor(private router: Router, private cacheSvc: CacheService) {
-    this.credentials = cacheSvc.getCache(eStorageKeys.PartialCredentials, eStorageType.Session);
+    this.credentials = cacheSvc.getCache<IPersonOption>(eStorageKeys.PartialCredentials, eStorageType.Session);
   }
 
   login(inputCredentials: any) {
