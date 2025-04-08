@@ -18,9 +18,3 @@ export interface IPersonOption {
   text: string,
   value: number
 }
-
-export interface IdToName {
-  Id: number,
-  Name: string
-}
-

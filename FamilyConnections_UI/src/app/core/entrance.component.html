@@ -3,17 +3,18 @@
   <p style="margin-top:15px">Connecting to one person is enough!</p>
 
   <br />
-  <a class="addPersonLink"  [routerLink]="['/addPerson']">ADD</a>
+  <a class="addPersonLink"  [routerLink]="['/addPerson']">ADD</a><br />
 
   <br />
-  <div style="margin-top:30px">OR SELECT</div>
+  <hr/>
 
-  <form #enterForm="ngForm" (ngSubmit)="enter(enterForm.value)">
-    <select required name="select" type="select" [(ngModel)]="selectedPerson" style="width:80px; margin-top:5px">
-      <option value="-1" disabled selected>Person</option>
+  <form style="display:inline-block; width:250px" #enterForm="ngForm" (ngSubmit)="enter(enterForm.value)">
+    <div style="margin-top:30px; display:inline">OR SELECT</div>
+    <select required name="select" type="select" [(ngModel)]="selectedPerson" style="width:150px; margin-top:5px; display:inline; border-color:transparent">
+      <option value="-1" disabled selected>PERSON</option>
       <option *ngFor="let person of personsOptions" [ngValue]="person.value">{{person.text}}</option>
     </select>
-    <div style="position:relative; top:5px">
+    <div style="top:5px; float:left; margin-left:12px">
       AND <button type="submit" class="btn btn-link enterBtn" [disabled]="enterForm.invalid || selectedPerson === '-1'">
         ENTER
       </button>

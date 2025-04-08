@@ -20,22 +20,22 @@ app.get("/api/persons", (req, res) => {
       return res.status(500).json({ message: message_ })
     } else {
       try {
-        //console.error("DATA:\n" + data);
-        var split_ = data.split('\n');
-        //console.error(`SPLIT: (${split_.length})\n` + split_);
+        //console.log("DATA:\n" + data);
+        //var split_ = data.split('\n');
+        //console.log(`SPLIT: (${split_.length})\n` + split_);
 
         var personsArray = [];
-        split_.forEach(p => {
+        data.split('\n').forEach(p => {
           if (p != '') {
-            //console.error("FOREACH PERSON:\n" + p);
+            //console.log("FOREACH PERSON:\n" + p);
             //var parsed = JSON.parse(p);
-            //console.error("PARSED:\n" + parsed);
+            //console.log("PARSED:\n" + parsed);
             personsArray.push(JSON.parse(p));
           }
         });
-        //console.error("ARRAY:\n" + personsArray);
 
-        //return res.status(200).json(data);
+        //console.error("ARRAY:\n" + personsArray);
+        //return res.status(200).json(personsArray);
         res.send(personsArray);
       } catch (e) {
         var message_ = "Error - Failed to parse JSON";

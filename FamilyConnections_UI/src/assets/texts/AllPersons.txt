@@ -1,4 +1,4 @@
-{"Id":1,"FullName":"Lior Matsliah","DateOfBirth":null,"DateOfBirthStr":"23/05/1985","Age":39,"PlaceOfBirth":"Israel","Gender":0,"FlatConnections":[]}
-{"Id":2,"FullName":"Keren Matsliah","DateOfBirth":"1984-05-01T22:00:00.000Z","DateOfBirthStr":"05/02/1984","Age":40,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}
-{"Id":3,"FullName":"Gaya Matsliah","DateOfBirth":"2013-06-05T21:00:00.000Z","DateOfBirthStr":"06/06/2013","Age":12,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}
-{"Id":4,"FullName":"Almog Matsliah","DateOfBirth":null,"DateOfBirthStr":"26/03/2015","Age":10,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}
+{"Id":1,"FullName":"Lior Matsliah","DateOfBirth":"1985-05-23","DateOfBirthStr":"23/05/1985","Age":39,"PlaceOfBirth":"Israel","Gender":0,"FlatConnections":[]}
+{"Id":2,"FullName":"Keren Matsliah","DateOfBirth":"1984-02-05","DateOfBirthStr":"05/02/1984","Age":40,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}
+{"Id":3,"FullName":"Gaya Matsliah","DateOfBirth":"2013-06-06","DateOfBirthStr":"06/06/2013","Age":12,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}
+{"Id":4,"FullName":"Almog Matsliah","DateOfBirth":"2015-03-26","DateOfBirthStr":"26/03/2015","Age":10,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[]}

@@ -1,6 +1,8 @@
 {
   "/api": {
     "target": "http://localhost:8081",
-    "secure": false
+    "secure": false,
+    "changeOrigin": true, //Helps avoid CORS issues
+    "logLevel": "debug" //Enables logs to check if proxying is working
   }
 }
