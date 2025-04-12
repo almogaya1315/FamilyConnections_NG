@@ -5,46 +5,53 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.get("/api/persons", (req, res) => {
+app.get("/api/persons", async (req, res) => {
 
-  var filePath = '../../src/assets/texts/AllPersons.txt';
+  //var filePath = '../../src/assets/texts/AllPersons.txt';
   //personsArray.forEach(p => {
   //  fileSystem.appendFile(filePath, `${JSON.stringify(p)}\n`, (err) => { });
   //});
   //res.send(personsArray);
 
-  fileSystem.readFile(filePath, "utf8", (error, data) => {
-    if (error) {
-      var message_ = "Error - Failed to get persons!";
-      //console.error(message_, error);
-      return res.status(500).json({ message: message_ })
-    } else {
-      try {
-        //console.log("DATA:\n" + data);
-        //var split_ = data.split('\n');
-        //console.log(`SPLIT: (${split_.length})\n` + split_);
+  const personsRes = getPersonsArray();
+  if (personsRes.error) {
+    return res.status(500).json({ message: personsRes.error })
+  } else {
+    res.send(personsRes.personsArray);
+  }
+});
 
-        var personsArray = [];
-        data.split('\n').forEach(p => {
-          if (p != '') {
-            //console.log("FOREACH PERSON:\n" + p);
-            //var parsed = JSON.parse(p);
-            //console.log("PARSED:\n" + parsed);
-            personsArray.push(JSON.parse(p));
-          }
-        });
+function getPersonsArray() {
+  var output = {};
+  var persons = [];
+  var filePath = '../../src/assets/texts/AllPersons.txt';
 
-        //console.error("ARRAY:\n" + personsArray);
-        //return res.status(200).json(personsArray);
-        res.send(personsArray);
-      } catch (e) {
-        var message_ = "Error - Failed to parse JSON";
-        console.error(message_, e);
-        return res.status(500).json({ message: message_ })
+  try {
+    var personsArrayJson = fileSystem.readFileSync(filePath, "utf-8");
+    personsArrayJson.split('\n').forEach(p => {
+      if (p != '') {
+        persons.push(JSON.parse(p));
       }
-    }
-  });
+    });
+    output = { personsArray: persons, errpr: null };
+  } catch (e) {
+    var message = "Error - Failed to get persons!" + e;
+    output = { personsArray: [], error: message };
+  }
+  return output;
+}
 
+app.post("/api/validateLogin", (req, res) => {
+  //console.log("Req body:", req.body);
+  var persons = getPersonsArray().personsArray;
+  var loginCredentials = req.body;
+  var person = persons.find(p => p.Id == loginCredentials.Id);
+  var loginRes = { Valid: true, Message: 'Valid' };
+  if (person.Password != loginCredentials.Password) {
+    loginRes.Valid = false;
+    loginRes.Message = "Incorrect Password";
+  }
+  res.send(loginRes);
 });
 
 //const personsObj = {

@@ -70,3 +70,7 @@ em {
 .error :ms-input-placeholder {
   color: #999;
 }
+
+.firstNameInput {
+  border: 0px
+}

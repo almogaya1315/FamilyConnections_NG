@@ -11,3 +11,21 @@
   text-decoration: none;
   padding: 0px 0px 3px 0px;
 }
+
+.enterForm {
+  display: inline-block;
+  width: 250px;
+}
+
+.enterSelect {
+  margin-top: 30px;
+  display: inline;
+}
+
+.loginNewPerson {
+  display: inline;
+}
+
+.loginLink{
+    text-decoration: none
+}

@@ -3,16 +3,16 @@
   <p style="margin-top:15px">Connecting to one person is enough!</p>
 
   <br />
-  <a class="addPersonLink"  [routerLink]="['/addPerson']">ADD</a><br />
+  <a class="addPersonLink" [routerLink]="['/addPerson']">ADD</a><br />
 
   <br />
-  <hr/>
+  <hr />
 
-  <form style="display:inline-block; width:250px" #enterForm="ngForm" (ngSubmit)="enter(enterForm.value)">
-    <div style="margin-top:30px; display:inline">OR SELECT</div>
+  <form class="enterForm" #enterForm="ngForm" (ngSubmit)="enter(enterForm.value)">
+    <div class="enterSelect">OR SELECT</div>
     <select required name="select" type="select" [(ngModel)]="selectedPerson" style="width:150px; margin-top:5px; display:inline; border-color:transparent">
       <option value="-1" disabled selected>PERSON</option>
-      <option *ngFor="let person of personsOptions" [ngValue]="person.value">{{person.text}}</option>
+      <option *ngFor="let person of personsOptions" [ngValue]="person.Id">{{person.FullName}}</option>
     </select>
     <div style="top:5px; float:left; margin-left:12px">
       AND <button type="submit" class="btn btn-link enterBtn" [disabled]="enterForm.invalid || selectedPerson === '-1'">
@@ -20,4 +20,16 @@
       </button>
     </div>
   </form>
+
+  <br />
+  <hr /><br />
+
+  <div style="margin-left:-40px">
+    <div class="loginNewPerson">OR </div>
+    <a class="loginLink" [routerLink]="['/login']">LOGIN</a>
+    <div class="loginNewPerson"> A NEW PERSON</div>
+  </div>
+
+  <hr />
+
 </div>

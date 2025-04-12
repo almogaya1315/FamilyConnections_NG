@@ -76,7 +76,8 @@ export enum eStorageType {
 }
 
 export enum eStorageKeys {
-  PartialCredentials = 'PartialCredentials',
-  FullCredentials = 'FullCredentials',
-  CurrentPerson = 'CurrentPerson'
+  //PartialCredentials = 'PartialCredentials',
+  //FullCredentials = 'FullCredentials',
+  //CurrentPerson = 'CurrentPerson'
+  PersonCredentials = 'PersonCredentials'
 }

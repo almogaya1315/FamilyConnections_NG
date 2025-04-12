@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router'
 import { delay, Observable } from 'rxjs';
 
-import { eGender, IPerson, IPersonOption } from '../persons/person.model';
+import { eGender, IPerson, IPersonCredentials } from '../persons/person.model';
 import { PersonsRepositoryService } from '../persons/persons-repository.service';
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
 
@@ -13,7 +13,7 @@ import { CacheService, eStorageKeys, eStorageType } from '../services/cache.serv
 })
 export class EntranceComponent implements OnInit {
   selectedPerson: string | null = '-1';
-  personsOptions: IPersonOption[] = [];
+  personsOptions: IPersonCredentials[] = [];
 
   constructor(private router: Router, private cacheSvc: CacheService, private personsRepo: PersonsRepositoryService) { }
 
@@ -21,8 +21,9 @@ export class EntranceComponent implements OnInit {
     this.personsRepo.getPersons().subscribe((personsData) => {
       if (personsData) {
         this.personsOptions = personsData.map(p => ({
-          text: p.FullName,
-          value: typeof p.Id === 'string' ? parseInt(p.Id, 10) : p.Id
+          FullName: p.FullName,
+          Id: typeof p.Id === 'string' ? parseInt(p.Id, 10) : p.Id,
+          Password: ''
         }));
       }
     });
@@ -30,10 +31,9 @@ export class EntranceComponent implements OnInit {
 
   enter(credentials: any) {
     delay(1000);
-
-    //create userRepo to get data. pull the person by the credentials, and send credentials to cache with Id & fullName
-    var personCredentials = this.personsOptions.find(p => p.value == credentials.select);
-    this.cacheSvc.setCache(personCredentials, eStorageKeys.PartialCredentials, [eStorageType.Session]);
-    this.router.navigate(['./login']);
+    var personCredentials = this.personsOptions.find(p => p.Id == credentials.select);
+    this.router.navigate(['./login'], {
+      queryParams: { Id: personCredentials?.Id, FullName: personCredentials?.FullName }
+    });
   }
 }

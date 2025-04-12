@@ -6,7 +6,8 @@ export interface IPerson {
   Age: number,
   PlaceOfBirth: string,
   Gender: number,
-  FlatConnections: any[]
+  FlatConnections: any[],
+  Password: string
 }
 
 export enum eGender {
@@ -14,7 +15,13 @@ export enum eGender {
   Female = 1
 }
 
-export interface IPersonOption {
-  text: string,
-  value: number
+export interface IPersonCredentials {
+  FullName: string,
+  Id: number,
+  Password: string
+}
+
+export interface ILoginResponse {
+  Valid: boolean,
+  Message: string,
 }

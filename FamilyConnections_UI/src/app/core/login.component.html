@@ -4,7 +4,12 @@
 
     <div class="form-group">
       <label for="fullName">Full Name:</label>
-      <input disabled style="border:0px" [(ngModel)]="credentials.text" #fullName="ngModel" name="text" id="text" type="text" value="{{credentials.text}}"/>
+      <!--<em *ngIf="!validLogin">Incorrect</em>-->
+      <input [disabled]="credentials.FullName && credentials.Id > 0"
+             [ngClass]="{ 'firstNameInput': credentials.FullName && credentials.Id > 0}"
+             [(ngModel)]="credentials.FullName" #fullName="ngModel"
+             [placeholder]="!credentials.FullName ? 'Full Name' : ''"
+             name="text" id="text" type="text" value="{{credentials.FullName}}" />
     </div>
 
     <!--<div class="form-group" [ngClass]="{ 'error': fullName.invalid && fullName.dirty }">
@@ -16,10 +21,11 @@
     <div class="form-group" [ngClass]="{ 'error': password.invalid && password.dirty }">
       <label for="password">Password:</label>
       <em *ngIf="password.invalid && password.dirty">Required</em>
+      <em *ngIf="password.dirty && !validLogin">Incorrect</em>
       <input [(ngModel)]="credentials.Password" #password="ngModel" required name="password" id="password" type="text" placeholder="Password..." />
     </div>
     <div class="form-group buttons">
-      <button type="button" [routerLink]="['./entrance']">Back</button>
+      <button type="button" [routerLink]="['/entrance']">Back</button>
       <button type="submit" class="save" [disabled]="loginForm.invalid">Enter</button>
     </div>
   </form>
