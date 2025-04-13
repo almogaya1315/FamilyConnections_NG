@@ -24,35 +24,90 @@ app.get("/api/persons", async (req, res) => {
 function getPersonsArray() {
   var output = {};
   var persons = [];
-  var filePath = '../../src/assets/texts/AllPersons.txt';
+  const filePath = '../../src/assets/texts/AllPersons.txt';
 
   try {
-    var personsArrayJson = fileSystem.readFileSync(filePath, "utf-8");
+    const personsArrayJson = fileSystem.readFileSync(filePath, "utf-8");
+    const connections = getConnectionsArray().connectionsArray;
     personsArrayJson.split('\n').forEach(p => {
       if (p != '') {
-        persons.push(JSON.parse(p));
+        const personObj = JSON.parse(p);
+        personObj.FlatConnections = setPersonConnections(personObj, connections);
+        persons.push(personObj);
       }
     });
-    output = { personsArray: persons, errpr: null };
+    output = { personsArray: persons, error: null };
   } catch (e) {
-    var message = "Error - Failed to get persons!" + e;
+    var message = "Error - Failed to get persons! " + e + e.stack;
     output = { personsArray: [], error: message };
   }
   return output;
+}
+
+function getConnectionsArray() {
+  var output = {};
+  const connections = [];
+  const filePath = '../../src/assets/texts/AllConnections.txt';
+  try {
+    const connectionsArrayJson = fileSystem.readFileSync(filePath, "utf-8");
+    connectionsArrayJson.split('\n').forEach(c => {
+      if (c != '') {
+        connections.push(JSON.parse(c));
+      }
+    });
+    output = { connectionsArray: connections, errpr: null };
+  } catch (e) {
+    var message = "Error - Failed to get connections! " + e;
+    output = { connectionsArray: [], error: message };
+  }
+  return output;
+}
+
+function setPersonConnections(person, connections) {
+  var personConnections = [];
+  connections = connections ?? getConnectionsArray().connectionsArray;
+  if (person != '') {
+    connections.forEach(c => {
+      if (c.TargetId == person.Id) {
+        personConnections.push(c);
+      }
+    });
+  }
+  return personConnections;
 }
 
 app.post("/api/validateLogin", (req, res) => {
   //console.log("Req body:", req.body);
   var persons = getPersonsArray().personsArray;
   var loginCredentials = req.body;
-  var person = persons.find(p => p.Id == loginCredentials.Id);
-  var loginRes = { Valid: true, Message: 'Valid' };
-  if (person.Password != loginCredentials.Password) {
+  var person = persons.find(p => p.FullName == loginCredentials.FullName);
+  if (person != undefined) {
+    person.FlatConnections = setPersonConnections(person);
+  }
+  var loginRes = { Valid: true, Message: 'Valid', Person: person };
+  if (person == undefined) {
+    loginRes.Valid = false;
+    loginRes.Message = "Person not found";
+    loginRes.Persony = null;
+  }
+  else if (person.Password != loginCredentials.Password) {
     loginRes.Valid = false;
     loginRes.Message = "Incorrect Password";
+    loginRes.Person = null;
   }
   res.send(loginRes);
 });
+
+app.post('/api/relatives', (req, res) => {
+  var persons = getPersonsArray().personsArray;
+  var flatConnections = req.body;
+  var relatives = [];
+  flatConnections.forEach(f => {
+    var relative = persons.find(p => p.Id == f.RelatedId)
+    relatives.push(relative);
+  });
+  res.send(relatives);
+})
 
 //const personsObj = {
 //  1: {

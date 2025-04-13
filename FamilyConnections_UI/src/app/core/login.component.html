@@ -1,27 +1,20 @@
 <div>
   <h2 class="header">Sign In</h2>
   <form #loginForm="ngForm" (ngSubmit)="login(loginForm.value)">
-
     <div class="form-group">
       <label for="fullName">Full Name:</label>
-      <!--<em *ngIf="!validLogin">Incorrect</em>-->
-      <input [disabled]="credentials.FullName && credentials.Id > 0"
+      <em *ngIf="fullName.invalid && fullName.dirty">Required</em>
+      <em *ngIf="fullName.dirty && !validFullName">Not found</em>
+      <input [disabled]="credentials.Id > 0"
              [ngClass]="{ 'firstNameInput': credentials.FullName && credentials.Id > 0}"
              [(ngModel)]="credentials.FullName" #fullName="ngModel"
              [placeholder]="!credentials.FullName ? 'Full Name' : ''"
-             name="text" id="text" type="text" value="{{credentials.FullName}}" />
+             required name="text" id="text" type="text" value="{{credentials.FullName}}" />
     </div>
-
-    <!--<div class="form-group" [ngClass]="{ 'error': fullName.invalid && fullName.dirty }">
-      <label for="fullName">Full Name:</label>
-      <em *ngIf="fullName.invalid && fullName.dirty">Required</em>
-      <input [(ngModel)]="credentials.FullName" #fullName="ngModel" required name="fullName" id="fullName" type="text" placeholder="Full Name..." />
-    </div>-->
-
     <div class="form-group" [ngClass]="{ 'error': password.invalid && password.dirty }">
       <label for="password">Password:</label>
       <em *ngIf="password.invalid && password.dirty">Required</em>
-      <em *ngIf="password.dirty && !validLogin">Incorrect</em>
+      <em *ngIf="password.dirty && !validPassword">Incorrect</em>
       <input [(ngModel)]="credentials.Password" #password="ngModel" required name="password" id="password" type="text" placeholder="Password..." />
     </div>
     <div class="form-group buttons">

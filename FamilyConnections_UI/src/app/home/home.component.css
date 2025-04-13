@@ -1,0 +1,28 @@
+.relativeBox {
+  width: 200px;
+  border: solid 1px;
+  display: inline-block;
+  margin-right: 25px
+}
+
+.cube-part {
+  border-style: none;
+  text-align: center;
+}
+
+.cube-bold {
+  font-weight: bold;
+  width: 195px;
+}
+
+.personBoxWrapper {
+  width: 1600px;
+  margin: 0 auto
+}
+
+.personBox {
+  width: 200px;
+  border: solid 1px;
+  display: inline-block;
+  padding: 0px 5px;
+}

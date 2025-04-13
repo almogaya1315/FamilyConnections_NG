@@ -2,12 +2,13 @@
   <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3" style="background-color:gray">
     <div class="container-fluid containerMaxWidth">
 
-      <a class="navbar-brand" [routerLink]="['/home']">Family Connections</a>
+      <!--[routerLink]="['/home']"-->
+      <a class="navbar-brand">Family Connections</a>
 
       <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
         <ul class="navbar-nav flex-grow-1" style="flex-direction: row-reverse">
           <li class="nav-item">
-            <a class="nav-link text-dark" *ngIf="currentPerson" (click)="signOut()">Leave</a>
+            <a style="cursor:pointer" class="nav-link text-dark" *ngIf="currentPerson" (click)="signOut()">Leave</a>
           </li>
         </ul>
       </div>

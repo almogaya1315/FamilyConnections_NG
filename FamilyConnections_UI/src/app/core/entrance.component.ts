@@ -30,7 +30,7 @@ export class EntranceComponent implements OnInit {
   }
 
   enter(credentials: any) {
-    delay(1000);
+    delay(1000); // SHOW LOADING SPINNER OVERLAY
     var personCredentials = this.personsOptions.find(p => p.Id == credentials.select);
     this.router.navigate(['./login'], {
       queryParams: { Id: personCredentials?.Id, FullName: personCredentials?.FullName }

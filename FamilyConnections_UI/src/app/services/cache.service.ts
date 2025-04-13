@@ -41,19 +41,21 @@ export class CacheService {
   }
 
   setCache(credentials: any, key: eStorageKeys, storages: eStorageType[]) {
-    if (storages.length == 0) {
-      this.setLocalStorage(key, credentials);
-      this.setSessionStorage(key, credentials);
-      this.setCookiesStorage(key, credentials);
-    } else {
-      if (storages.includes(eStorageType.Local)) {
+    if (credentials != null) {
+      if (storages.length == 0) {
         this.setLocalStorage(key, credentials);
-      }
-      if (storages.includes(eStorageType.Session)) {
         this.setSessionStorage(key, credentials);
-      }
-      if (storages.includes(eStorageType.Cookies)) {
         this.setCookiesStorage(key, credentials);
+      } else {
+        if (storages.includes(eStorageType.Local)) {
+          this.setLocalStorage(key, credentials);
+        }
+        if (storages.includes(eStorageType.Session)) {
+          this.setSessionStorage(key, credentials);
+        }
+        if (storages.includes(eStorageType.Cookies)) {
+          this.setCookiesStorage(key, credentials);
+        }
       }
     }
   }
@@ -67,6 +69,24 @@ export class CacheService {
   private setCookiesStorage(key: eStorageKeys, credentials: any) {
     this.cookies.set(key, JSON.stringify(credentials));
   }
+
+  removeCache(key: eStorageKeys, storages: eStorageType[]) {
+    if (storages.length == 0) {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+      this.cookies.delete(key);
+    } else {
+      if (storages.includes(eStorageType.Local)) {
+        localStorage.removeItem(key);
+      }
+      if (storages.includes(eStorageType.Session)) {
+        sessionStorage.removeItem(key);
+      }
+      if (storages.includes(eStorageType.Cookies)) {
+        this.cookies.delete(key);
+      }
+    }
+  }
 }
 
 export enum eStorageType {
@@ -78,6 +98,6 @@ export enum eStorageType {
 export enum eStorageKeys {
   //PartialCredentials = 'PartialCredentials',
   //FullCredentials = 'FullCredentials',
-  //CurrentPerson = 'CurrentPerson'
+  CurrentPerson = 'CurrentPerson',
   PersonCredentials = 'PersonCredentials'
 }

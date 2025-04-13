@@ -1,0 +1,43 @@
+<div>
+
+  <div class="personBoxWrapper">
+    <div>Person:</div>
+
+    <div class="personBox">
+      <div>
+        <span class="cube-part cube-bold">{{person?.FullName}}</span>
+      </div>
+      <div>
+        <span class="cube-part">{{person?.DateOfBirthStr}}</span>
+      </div>
+      <div>
+        <span class="cube-part">{{person?.PlaceOfBirth}}</span>
+      </div>
+    </div>
+  </div>
+
+  <br />
+  <hr />
+
+  <div class="text-center">
+    <h1 class="display-4">Your connections</h1>
+    <div *ngFor="let relation of personConnections" class="relativeBox">
+      <div>
+        <span class="cube-part cube-bold">{{relation.relative.FullName}}</span>
+      </div>
+      <div>
+        <span class="cube-part">{{relation.relative.DateOfBirthStr}}</span>
+      </div>
+      <div>
+        <span class="cube-part">{{relation.relative.PlaceOfBirth}}</span>
+      </div>
+      <div>
+        <span class="cube-part cube-bold">{{eRel[relation.relationship.Type]}}</span>
+      </div>
+    </div>
+  </div>
+
+  <br />
+  <hr />
+
+</div>
