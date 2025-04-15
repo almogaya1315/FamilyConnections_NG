@@ -23,6 +23,20 @@ export class PersonsRepositoryService {
     this.currentPerson.next(null);
   }
 
+  getDefaultPerson(): IPerson {
+    return {
+      Id: -1,
+      FullName: '',
+      DateOfBirth: new Date('1996-10-15'),
+      DateOfBirthStr: '0000-00-00',
+      Age: 0,
+      FlatConnections: [],
+      Gender: 0,
+      Password: '',
+      PlaceOfBirth: ''
+    };
+  }
+
   getPersons(): Observable<IPerson[]> {
     return this.http.get<IPerson[]>('/api/persons');
   }
