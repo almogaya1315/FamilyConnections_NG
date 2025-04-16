@@ -1,4 +1,48 @@
 .page-center {
   width: 1600px;
-  margin: 0 auto
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.welcome {
+  width: 33.33%;
+  border: 3px solid;
+  margin-right: 3px;
+  padding: 5px;
+  
+}
+
+.verify {
+  width: 33.33%;
+  border: 1px dashed;
+  margin-right: 3px;
+  margin-left: 3px;
+  padding: 5px;
+  background-color: #f0f0f0;
+  color: lightgray;
+}
+
+.complete {
+  width: 33.33%;
+  border: 1px dashed;
+  margin-left: 3px;
+  padding: 5px;
+  background-color: #f0f0f0;
+  color: lightgray;
+}
+
+.nextBtn {
+  float: right;
+  margin-bottom: 10px
+}
+
+.sectionHeader {
+  display: flex;
+  justify-self: center
+}
+
+.sectionContainer {
+  width: 300px;
+  justify-self: center
 }
