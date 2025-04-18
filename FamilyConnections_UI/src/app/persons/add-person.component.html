@@ -1,62 +1,75 @@
 <div class="page-center">
   <div class="welcome">
     <h4 class="sectionHeader">WELCOME, NEW FAMILY MEMBER!</h4>
-    <hr />
+    <div class="divider"></div>
     <div class="sectionContainer">
-      <form #addPersonForm="ngForm" (submit)="add(addPersonForm.value)">
+      <form #addPersonForm="ngForm" (submit)="next(addPersonForm.value)">
         <div class="form-group">
-          <label for="fullName">Full Name:</label>
-          <input [(ngModel)]="newPerson!.FullName" #fullName="ngModel" class="form-control"
-                 required name="fullName" id="fullName" type="text" value="{{newPerson.FullName}}" />
-          <span *ngIf="fullName.invalid && fullName.dirty" class="text-danger">Required!</span>
+          <div>
+            <label for="fullName">Full Name:</label>
+            <span *ngIf="fullName.invalid && fullName.dirty" class="text-danger" style="float:right">Required!</span>
+          </div>
+          <input [(ngModel)]="newConnection!.TartgetPerson!.FullName" #fullName="ngModel" class="form-control"
+                 required name="fullName" id="fullName" type="text" value="{{newConnection!.TartgetPerson!.FullName}}" />
         </div>
         <br />
         <div class="form-group">
-          <label for="dateOfBirth">Date of Birth:</label>
-          <input [(ngModel)]="newPerson!.DateOfBirth" #dateOfBirth="ngModel" class="form-control"
-                 required name="dateOfBirth" id="dateOfBirth" type="date" value="{{newPerson.DateOfBirth}}" />
-          <span *ngIf="dateOfBirth.invalid && dateOfBirth.dirty" class="text-danger">Required!</span>
+          <div>
+            <label for="dateOfBirth">Date of Birth:</label>
+            <span *ngIf="dateOfBirth.invalid && dateOfBirth.dirty" class="text-danger" style="float:right">Required!</span>
+          </div>
+          <input [(ngModel)]="newConnection!.TartgetPerson!.DateOfBirth" #dateOfBirth="ngModel" class="form-control"
+                 required name="dateOfBirth" id="dateOfBirth" type="date" value="{{newConnection!.TartgetPerson!.DateOfBirth}}" />
         </div>
         <br />
         <div class="form-group">
-          <label for="selectedPlaceOfBirth">Place of Birth:</label>
+          <div>
+            <label for="selectedPlaceOfBirth">Place of Birth:</label>
+            <span *ngIf="!selectedPlaceOfBirth" class="text-danger" style="float:right">Required!</span>
+          </div>
           <select required name="select" [(ngModel)]="selectedPlaceOfBirth" type="select" class="form-select">
-            <option value="-1" disabled selected>Country</option>
-            <option *ngFor="let country of countries" [ngValue]="country.Id">{{country.Name}}</option>
+            <option *ngFor="let country of countries" [ngValue]="country">{{country.Name}}</option>
           </select>
-          <span *ngIf="!selectedPlaceOfBirth" class="text-danger">Required!</span>
         </div>
         <br />
         <div class="form-group">
-          <label for="newPerson.Gender">Gender:</label>
-          <select required name="select" [(ngModel)]="newPerson!.Gender" typeof="select" class="form-select">
-            <option value="-1" disabled selected>Gender</option>
-            <option *ngFor="let gen of genders" [ngValue]="gen.Id">{{gen.Name}}</option>
+          <div>
+            <label for="selectedGender">Gender:</label>
+            <span *ngIf="!selectedGender" class="text-danger" style="float:right">Required!</span>
+          </div>
+          <select required name="select" [(ngModel)]="selectedGender" typeof="select" class="form-select">
+            <option *ngFor="let gen of genders" [ngValue]="gen">{{gen.Name}}</option>
           </select>
-          <span *ngIf="!newPerson.Gender" class="text-danger">Required!</span>
         </div>
         <br />
+        <div class="divider"></div>
         <div class="form-group">
-          <label for="selectedRelated">Connecting to..:</label>
+          <div>
+            <label for="selectedRelated">Connecting to:</label>
+            <span *ngIf="!selectedRelated" class="text-danger" style="float:right">Required!</span>
+          </div>
           <select required name="select" type="select" [(ngModel)]="selectedRelated" class="form-select">
-            <option value="-1" selected>Person</option>
-            <option *ngFor="let person of personsItems" [ngValue]="person.Id">{{person.Name}}</option>
+            <option *ngFor="let person of personsItems" [ngValue]="person">{{person.Name}}</option>
           </select>
-          <span *ngIf="!selectedRelated" class="text-danger">Required!</span>
+
         </div>
         <br />
         <div class="form-group">
-          <label for="selectedRelation">As Your:</label>
+          <div>
+            <label for="selectedRelation">As Your:</label>
+            <span *ngIf="!selectedRelation" class="text-danger" style="float:right">Required!</span>
+          </div>
           <select required name="select" type="select" [(ngModel)]="selectedRelation" class="form-select">
-            <option value="-1" disabled selected>Relationship</option>
-            <option *ngFor="let rel of relations" [ngValue]="rel.Id">{{rel.Name}}</option>
+            <option *ngFor="let rel of relations" [ngValue]="rel">{{rel.Name}}</option>
           </select>
-          <span *ngIf="!selectedRelation" class="text-danger">Required!</span>
+
         </div>
         <br />
-        <hr />
+        <div class="divider"></div>
         <div class="form-group">
-          <input type="submit" value="Next" class="btn btn-primary nextBtn" />
+          <input [disabled]="fullName.invalid || dateOfBirth.invalid ||
+                 selectedPlaceOfBirth.Id == -1 || selectedGender.Id == -1 || selectedRelated.Id == -1 || selectedRelation.Id == -1"
+                 type="submit" value="Next" class="btn btn-primary nextBtn" />
         </div>
         <br />
       </form>

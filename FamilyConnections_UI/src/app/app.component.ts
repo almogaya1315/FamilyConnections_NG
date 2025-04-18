@@ -17,9 +17,9 @@ export class AppComponent {
 
   constructor(private router: Router, private cacheSvc: CacheService) {
     //this.watchRouterChanges();
-    //this.router.navigate(['./entrance']);
+    this.router.navigate(['./entrance']);
 
-    this.router.navigate(['./addPerson']);
+    //this.router.navigate(['./addPerson']);
   }
 
   //private watchRouterChanges() {

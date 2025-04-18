@@ -23,9 +23,20 @@ export class StaticDataService {
   }
 
   getRelations(): INameToId[] {
-    return Object.keys(eRel).map(key => ({
-      Id: Number(key),
-      Name: eRel[Number(key)]
-    }));
+
+    return Object.entries(eRel)
+      .filter(([key, value]) =>
+        isNaN(Number(key)) && typeof value === 'number' && value <= 32
+      )
+      .map(([key, value]) => ({
+        Id: value as number,
+        Name: key
+      }));
+
+    //return Object.keys(eRel)
+    //  .map(key => ({
+    //  Id: Number(key),
+    //  Name: eRel[Number(key)]
+    //}));
   }
 }

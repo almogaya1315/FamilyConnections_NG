@@ -46,3 +46,9 @@
   width: 300px;
   justify-self: center
 }
+
+.divider {
+  border: 1px solid;
+  margin-bottom: 15px;
+  color: darkgray;
+}

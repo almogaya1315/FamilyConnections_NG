@@ -20,6 +20,7 @@ export class EntranceComponent implements OnInit {
   ngOnInit() {
     this.personsRepo.getPersons().subscribe((personsData) => {
       if (personsData) {
+        this.cacheSvc.setCache(personsData, eStorageKeys.AllLocalPersons, [eStorageType.Session]);
         this.personsOptions = personsData.map(p => ({
           FullName: p.FullName,
           Id: typeof p.Id === 'string' ? parseInt(p.Id, 10) : p.Id,

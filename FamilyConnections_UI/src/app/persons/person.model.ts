@@ -1,11 +1,11 @@
 export interface IPerson {
   Id: string | number,
   FullName: string,
-  DateOfBirth: Date,
+  DateOfBirth: Date | null,
   DateOfBirthStr: string,
   Age: number,
   PlaceOfBirth: string,
-  Gender: number,
+  Gender: eGender,
   FlatConnections: IFlatConnection[],
   Password: string
 }
@@ -28,16 +28,23 @@ export interface ILoginResponse {
 }
 
 export interface IConnection {
-  TartgetPerson: IPerson,
-  RelatedPerson: IPerson,
-  Relationship: IRelationshipInfo,
-  Flat: IFlatConnection
+  TartgetPerson: IPerson | null,
+  RelatedPerson: IPerson | null,
+  Relationship: IRelationshipInfo | null,
+  Flat: IFlatConnection | null
 }
 
 export interface IFlatConnection {
   TartgetId: number,
   RelatedId: number,
   RelationshipId: number
+}
+
+export interface IUndecidedConnection {
+  Tartget: IFlatConnection,
+  Related: IFlatConnection,
+  FarRelDebug: string,
+  Options: eRel[]
 }
 
 export interface IRelationshipInfo {

@@ -27,7 +27,7 @@ export class PersonsRepositoryService {
     return {
       Id: -1,
       FullName: '',
-      DateOfBirth: new Date('1996-10-15'),
+      DateOfBirth: null,
       DateOfBirthStr: '0000-00-00',
       Age: 0,
       FlatConnections: [],

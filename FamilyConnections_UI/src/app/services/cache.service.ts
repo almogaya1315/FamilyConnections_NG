@@ -40,21 +40,21 @@ export class CacheService {
     return json ? (JSON.parse(json) as T) : null;
   }
 
-  setCache(credentials: any, key: eStorageKeys, storages: eStorageType[]) {
-    if (credentials != null) {
+  setCache(data: any, key: eStorageKeys, storages: eStorageType[]) {
+    if (data != null) {
       if (storages.length == 0) {
-        this.setLocalStorage(key, credentials);
-        this.setSessionStorage(key, credentials);
-        this.setCookiesStorage(key, credentials);
+        this.setLocalStorage(key, data);
+        this.setSessionStorage(key, data);
+        this.setCookiesStorage(key, data);
       } else {
         if (storages.includes(eStorageType.Local)) {
-          this.setLocalStorage(key, credentials);
+          this.setLocalStorage(key, data);
         }
         if (storages.includes(eStorageType.Session)) {
-          this.setSessionStorage(key, credentials);
+          this.setSessionStorage(key, data);
         }
         if (storages.includes(eStorageType.Cookies)) {
-          this.setCookiesStorage(key, credentials);
+          this.setCookiesStorage(key, data);
         }
       }
     }
@@ -99,5 +99,6 @@ export enum eStorageKeys {
   //PartialCredentials = 'PartialCredentials',
   //FullCredentials = 'FullCredentials',
   CurrentPerson = 'CurrentPerson',
-  PersonCredentials = 'PersonCredentials'
+  PersonCredentials = 'PersonCredentials',
+  AllLocalPersons = "AllLocalPersons"
 }
