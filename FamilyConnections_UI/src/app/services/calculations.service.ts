@@ -120,17 +120,80 @@ export class CalculationsService {
   private checkParent(
     possibleComplexRel: { val: eRel | null },
     undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel;
 
     //person's Parent
     if (this.hasParent(this._personConn!)) {
       //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //isGrandParent
+        relation = isGrandParent();
+      }
     }
 
   }
 
-  // Has Methods
+  // has Methods
+  private hasSpouse(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.Wife || conn.Relationship!.Type == eRel.Husband;
+  }
+  private hasChild(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.Daughter || conn.Relationship!.Type == eRel.Son;
+  }
   private hasParent(conn: IConnection) {
     return conn.Relationship?.Type == eRel.Mother || conn.Relationship?.Type == eRel.Father;
   }
+  private hasSibling(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.Sister || conn.Relationship!.Type == eRel.Brother;
+  }
+  private hasSiblingChild(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.Niece || conn.Relationship!.Type == eRel.Nephew;
+  }
+  private hasSiblingInLaw(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.SisterInLaw || conn.Relationship!.Type == eRel.BrotherInLaw;
+  }
+  private hasParentSibling(conn: IConnection) {
+    return conn.Relationship!.Type == eRel.Aunt || conn.Relationship!.Type == eRel.Uncle;
+  }
 
+  // is methods
+  private isGrandParent() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.GrandMother : eRel.GrandFather;
+  }
+  private isSibling() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Sister : eRel.Brother;
+  }
+  private isParentSibling() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Aunt : eRel.Uncle;
+  }
+  private isParent() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Mother : eRel.Father;
+  }
+  private isStepParent() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepMother : eRel.StepFather;
+  }
+  private isSiblingChild() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Niece : eRel.Nephew;
+  }
+  private isSiblingInLaw() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.SisterInLaw : eRel.BrotherInLaw;
+  }
+  private isChild() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Daughter : eRel.Son;
+  }
+  private isStepChild() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepDaughter : eRel.StepSon;
+  }
+  private isParentInLaw() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.MotherInLaw : eRel.FatherInLaw;
+  }
+  private isStepSibling() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepSister : eRel.StepBrother;
+  }
+  private isChildInLaw() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.DaughterInLaw : eRel.SonInLaw;
+  }
+  private isSpouse() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Wife : eRel.Husband;
+  }
 }
