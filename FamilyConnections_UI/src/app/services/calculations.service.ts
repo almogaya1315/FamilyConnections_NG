@@ -19,10 +19,11 @@ export class CalculationsService {
     this._conns = conns;
   }
 
-  opposite(flatCon: IFlatConnection, relatedPerson: IPerson): eRel {
+  opposite(relation: eRel, gender: eGender): eRel {
+  //opposite(flatCon: IFlatConnection, relatedPerson: IPerson): eRel {
     let oppositeRel = eRel.FarRel;
-    let relation = flatCon.RelationshipId as eRel;
-    let gender = relatedPerson.Gender;
+    //let relation = flatCon.RelationshipId as eRel;
+    //let gender = relatedPerson.Gender;
 
     switch (relation) {
       case eRel.Mother:
@@ -116,6 +117,24 @@ export class CalculationsService {
     if (!relation) relation = this.checkSiblingInLaw(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.farRelation(undecidedConns);
     return relation;
+  }
+
+  connectBetween(person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
+    newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false) {
+    if (relation == eRel.FarRel || relation == eRel.Undecided) return;
+
+    if (opposite) {
+      relation = this.opposite(relation!, relatedPerson!.Gender);
+      if (possibleComplexRel.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
+    }
+
+    if (!this.conExists()) {
+
+    }
+  }
+
+  private conExists() {
+    return true;
   }
 
   private farRelation(undecidedConns: IUndecidedConnection[]) {
