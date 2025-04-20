@@ -28,7 +28,7 @@ export interface ILoginResponse {
 }
 
 export interface IConnection {
-  TartgetPerson: IPerson | null,
+  TargetPerson: IPerson | null,
   RelatedPerson: IPerson | null,
   Relationship: IRelationshipInfo | null,
   Flat: IFlatConnection | null
@@ -41,7 +41,7 @@ export interface IFlatConnection {
 }
 
 export interface IUndecidedConnection {
-  Tartget: IFlatConnection,
+  Target: IFlatConnection,
   Related: IFlatConnection,
   FarRelDebug: string,
   Options: eRel[]

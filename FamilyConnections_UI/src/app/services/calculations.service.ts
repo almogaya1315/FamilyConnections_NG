@@ -12,6 +12,7 @@ export class CalculationsService {
   constructor() {
   }
 
+  // operation Methods
   initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[]) {
     this._personConn = personConn;
     this._relatedConn = relatedConn;
@@ -107,30 +108,274 @@ export class CalculationsService {
     possibleComplexRel: { val: eRel | null },
     undecidedConns: IUndecidedConnection[]
   ): eRel | null {
-    let relation: eRel | null = checkParent(possibleComplexRel, undecidedConns);
-    if (!relation) relation = checkChild(possibleComplexRel, undecidedConns);
-    if (!relation) relation = checkSibling(possibleComplexRel, undecidedConns);
-    if (!relation) relation = checkSpouse(possibleComplexRel, undecidedConns);
-    if (!relation) relation = checkParentSibling(possibleComplexRel, undecidedConns);
-    if (!relation) relation = checkSiblingInLaw(possibleComplexRel, undecidedConns);
-    if (!relation) relation = FarRelation(undecidedConns);
+    let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSpouse(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkParentSibling(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSiblingInLaw(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.farRelation(undecidedConns);
     return relation;
   }
 
+  private farRelation(undecidedConns: IUndecidedConnection[]) {
+    let relation = eRel.FarRel;
+    undecidedConns.push({
+      Target: this._personConn!.Flat!,
+      Related: this._relatedConn!.Flat!,
+      FarRelDebug: this.farRelStr(relation),
+      Options: [relation]
+    });
+    return relation;
+  }
+  private farRelStr(relation: eRel) {
+    return `${this._personConn!.TargetPerson!.FullName}'s ${this._personConn!.Relationship!.Type}, ${this._personConn!.RelatedPerson!.FullName},` +
+      `Has a ${this._relatedConn!.Relationship!.Type}, ` +
+      `"So ${this._relatedConn!.RelatedPerson!.FullName} is ${this._personConn!.TargetPerson!.FullName}'s ${relation}`;
+  }
+  private undecidedRelation(rel1: { Female: eRel, Male: eRel }, rel2: { Female: eRel, Male: eRel }, undecidedConns: IUndecidedConnection[]) {
+    var relation1 = this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? rel1.Female : rel1.Male;
+    var relation2 = this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? rel2.Female : rel2.Male;
+    //var farRelStr1 = this.farRelStr(relation1);
+    //var farRelStr2 = this.farRelStr(relation2);
+
+    var to = `${this._relatedConn!.RelatedPerson!.FullName} to ${this._personConn!.TargetPerson!.FullName}`;
+    undecidedConns.push({
+      Target: this._personConn!.Flat!,
+      Related: this._relatedConn!.Flat!,
+      FarRelDebug: `${to}, ${relation1}\n${relation2}`,
+      Options: [relation1, relation2]
+    });
+    return eRel.Undecided;
+  }
+
+  // relation Checkers
   private checkParent(
     possibleComplexRel: { val: eRel | null },
     undecidedConns: IUndecidedConnection[]) {
-    let relation: eRel;
+    let relation: eRel | null = null;
 
     //person's Parent
     if (this.hasParent(this._personConn!)) {
       //HasParent
       if (this.hasParent(this._relatedConn!)) {
         //isGrandParent
-        relation = isGrandParent();
+        relation = this.isGrandParent();
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsSibling
+        relation = this.isSibling();
+      }
+      //HasSibling //HasSiblingInLaw
+      else if (this.hasSibling(this._relatedConn!) || this.hasSiblingInLaw(this._relatedConn!)) {
+        //IsParentSibling
+        relation = this.isParentSibling();
+      }
+      //HasSpouse
+      else if (this.hasSpouse(this._relatedConn!)) {
+        //IsParent
+        relation = this.isParent();
+        //IsStepParent
+        possibleComplexRel.val = this.isStepParent();
+      }
+      else {
+        //FarRelation
+        relation = this.farRelation(undecidedConns);
       }
     }
 
+    return relation;
+  }
+  private checkChild(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's Child
+    if (this.hasChild(this._personConn!)) {
+      //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //IsSpouse
+        relation = this.isSpouse();
+        //IsExPartner
+        possibleComplexRel.val = eRel.ExPartner;
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsGrandChild
+        relation = eRel.GrandChild;
+      }
+      //HasSibling
+      else if (this.hasSibling(this._relatedConn!)) {
+        //IsChild
+        relation = this.isChild();
+        //IsStepChild
+        possibleComplexRel.val = this.isStepChild();
+      }
+      //HasSpouse
+      else if (this.hasSpouse(this._relatedConn!)) {
+        //IsChildInLaw
+        relation = this.isChildInLaw();
+      }
+      else {
+        //FarRelation
+        relation = this.farRelation(undecidedConns);
+      }
+    }
+
+    return relation;
+  }
+  private checkSibling(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's Sibling
+    if (this.hasSibling(this._personConn!)) {
+      //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //IsParent
+        relation = this.isParent();
+        //IsStepParent
+        possibleComplexRel.val = this.isStepParent();
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsSiblingChild
+        relation = this.isSiblingChild();
+      }
+      //HasSibling
+      else if (this.hasSibling(this._relatedConn!)) {
+        //IsSibling
+        relation = this.isSibling();
+        //IsStepSibling
+        possibleComplexRel.val = this.isStepSibling();
+      }
+      //HasSpouse
+      else if (this.hasSpouse(this._relatedConn!)) {
+        //IsSiblingInLaw
+        relation = this.isSiblingInLaw();
+      }
+      //HasParentSibling
+      else if (this.hasParentSibling(this._relatedConn!)) {
+        //IsParentSibling
+        relation = this.isParentSibling();
+      }
+      //HasSiblingInLaw
+      else if (this.hasSiblingInLaw(this._relatedConn!)) {
+        //IsSiblingInLaw
+        relation = this.isSiblingInLaw();
+      }
+      //HasSiblingChild
+      else if (this.hasSiblingChild(this._relatedConn!)) {
+        //IsSiblingChild
+        relation = this.isSiblingChild();
+      }
+      else {
+        //FarRelation
+        relation = this.farRelation(undecidedConns!);
+      }
+    }
+
+    return relation;
+  }
+  private checkSpouse(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's Spouse
+    if (this.hasSpouse(this._personConn!)) {
+      //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //IsParentInLaw
+        relation = this.isParentInLaw();
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsChild
+        relation = this.isChild();
+        //IsStepChild
+        possibleComplexRel.val = this.isStepChild();
+      }
+      //HasSibling
+      else if (this.hasSibling(this._relatedConn!)) {
+        //IsSiblingInLaw
+        relation = this.isSiblingInLaw();
+      }
+      else {
+        //FarRelation
+        relation = this.farRelation(undecidedConns);
+      }
+    }
+
+    return relation;
+  }
+  private checkParentSibling(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's ParentSibling
+    if (this.hasParentSibling(this._personConn!)) {
+      //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //IsGrandParent
+        relation = this.isGrandParent();
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsCousin
+        relation = eRel.Cousin;
+      }
+      //HasSibling
+      else if (this.hasSibling(this._relatedConn!)) {
+        //IsParent
+        relation = this.isParent();
+      }
+      //HasSiblingChild
+      else if (this.hasSiblingChild(this._relatedConn!)) {
+        //IsSiblingChild
+        relation = this.isSiblingChild();
+      }
+      //HasSpouse
+      else if (this.hasSpouse(this._relatedConn!)) {
+        //IsParentSibling
+        relation = this.isParentSibling();
+      }
+      //HasSiblingInLaw
+      else if (this.hasSiblingInLaw(this._relatedConn!)) {
+        //ParentSibling OR Parent -> Undecided
+        relation = this.undecidedRelation({ Female: eRel.Aunt, Male: eRel.Uncle }, { Female: eRel.Mother, Male: eRel.Father }, undecidedConns);
+      }
+      else {
+        //FarRelation
+        relation = this.farRelation(undecidedConns);
+      }
+    }
+
+    return relation;
+  }
+  private checkSiblingInLaw(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's SiblingInLaw
+    if (this.hasSiblingInLaw(this._personConn!)) {
+      //HasParentSibling
+      if (this.hasParentSibling(this._relatedConn!)) {
+        //IsParentSibling
+        relation = this.isParentSibling();
+      }
+    }
+    else {
+      //FarRelation
+      relation = this.farRelation(undecidedConns);
+    }
+
+    return relation;
   }
 
   // has Methods
