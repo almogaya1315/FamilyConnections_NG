@@ -55,4 +55,8 @@ export class PersonsRepositoryService {
   getRelatives(flatConnections: IFlatConnection[]) {
     return this.http.post<IPerson[]>('/api/relatives', flatConnections);
   }
+
+  getConnections() {
+    return this.http.get<IFlatConnection[]>('/api/connections');
+  }
 }

@@ -109,6 +109,15 @@ app.post('/api/relatives', (req, res) => {
   res.send(relatives);
 })
 
+app.get('/api/connections', (req, res) => {
+  const connsRes = getConnectionsArray();
+  if (connsRes.error) {
+    return res.status(500).json({ message: connsRes.error })
+  } else {
+    res.send(connsRes.connsArray);
+  }
+})
+
 //const personsObj = {
 //  1: {
 //    Id: 1,

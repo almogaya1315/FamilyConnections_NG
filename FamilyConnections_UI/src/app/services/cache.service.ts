@@ -100,5 +100,7 @@ export enum eStorageKeys {
   //FullCredentials = 'FullCredentials',
   CurrentPerson = 'CurrentPerson',
   PersonCredentials = 'PersonCredentials',
-  AllLocalPersons = "AllLocalPersons"
+  AllLocalPersons = "AllLocalPersons",
+  AllLocalConnections = "AllLocalConnections"
+
 }

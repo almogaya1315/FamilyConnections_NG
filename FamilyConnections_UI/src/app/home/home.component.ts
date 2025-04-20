@@ -17,6 +17,13 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.setPerson();
     this.setRelatives();
+    this.setConnections();
+  }
+
+  private setConnections() {
+    this.personsRepo.getConnections().subscribe((conns) => {
+      this.cacheSvc.setCache(conns, eStorageKeys.AllLocalConnections, [eStorageType.Session]);
+    });
   }
 
   private setPerson() {
@@ -35,7 +42,9 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  constructor(private cacheSvc: CacheService, private personsRepo: PersonsRepositoryService) {
+  constructor(
+    private cacheSvc: CacheService,
+    private personsRepo: PersonsRepositoryService) {
     //this.person = cacheSvc.getCache(eStorageKeys.CurrentPerson, eStorageType.Session);
   }
 
