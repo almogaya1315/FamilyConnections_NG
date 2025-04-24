@@ -14,14 +14,30 @@ export class ConnectionsService {
     private calcSvc: CalculationsService,
     private cacheSvc: CacheService) { }
 
+  createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, possibleComplex: eRel | null = null): IConnection {
+    return {
+      TargetPerson: person,
+      RelatedPerson: relatedPerson,
+      Relationship: {
+        Id: relation as number,
+        Type: relation!,
+        PossibleComplexRel: possibleComplex
+      },
+      Flat: {
+        TartgetId: person.Id as number,
+        RelatedId: relatedPerson?.Id as number,
+        RelationshipId: relation as number
+      }
+    }
+  }
+
   fillNewConnection(persons: IPerson[], inputs: Inputs): IConnection {
 
-    let newConnection: IConnection = {
-      TargetPerson: this.personsRepo.getDefaultPerson(),
-      RelatedPerson: this.personsRepo.getDefaultPerson(),
-      Relationship: { Id: -1, Type: eRel.Undecided },
-      Flat: null
-    };
+    let newConnection = this.createConnection(
+      this.personsRepo.getDefaultPerson(),
+      this.personsRepo.getDefaultPerson(),
+      eRel.Undecided
+    );
 
     newConnection!.TargetPerson!.Id = Math.max(...persons!.map(p => p.Id as number)) + 1;;
     newConnection!.TargetPerson!.FullName = inputs.targetPersonFullName;
@@ -52,6 +68,14 @@ export class ConnectionsService {
     var oppositeFlatCon = this.opposite(flatCon, relatedPerson!);
     newConnections.push(flatCon, oppositeFlatCon);
     return newConnections;
+  }
+
+  setLocalCache(persons: IPerson[], newConnection: IConnection) {
+    persons?.push(newConnection.TargetPerson!);
+    this.cacheSvc.setCache(persons, eStorageKeys.AllLocalPersons, [eStorageType.Session]);
+    let conns = this.calcSvc.getConns();
+    conns.push(newConnection);
+    this.cacheSvc.setCache(conns, eStorageKeys.AllLocalConnections, [eStorageType.Session]);
   }
 
   private opposite(flatCon: IFlatConnection, relatedPerson: IPerson): IFlatConnection {
@@ -164,7 +188,7 @@ export class ConnectionsService {
         let relatedConns: IConnection[] = personConns
           .filter(c => c.RelatedPerson!.Id != person.Id)
           .flatMap(c => this.mapPersonFlatConnections(c.RelatedPerson!, persons)
-        );
+          );
 
         debugger;
 

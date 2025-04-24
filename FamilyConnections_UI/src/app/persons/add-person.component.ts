@@ -18,12 +18,11 @@ export class AddPersonComponent {
   selectedRelated: INameToId = { Id: -1, Name: '' };
   selectedRelation: INameToId = { Id: -1, Name: '' };
 
-  newConnection: IConnection = {
-    TartgetPerson: this.personsRepo.getDefaultPerson(),
-    RelatedPerson: this.personsRepo.getDefaultPerson(),
-    Relationship: { Id: -1, Type: eRel.Undecided },
-    Flat: null
-  };
+  newConnection = this.connsSvc.createConnection(
+    this.personsRepo.getDefaultPerson(),
+    this.personsRepo.getDefaultPerson(),
+    eRel.Undecided
+  );
 
   countries: INameToId[];
   genders: INameToId[];
@@ -35,7 +34,7 @@ export class AddPersonComponent {
     private staticData: StaticDataService,
     private cacheSvc: CacheService,
     private connsSvc: ConnectionsService) {
-    //this.newPerson = personsRepo.getDefaultPerson();
+
     this.countries = staticData.getCountries();
     this.genders = staticData.getGenders();
     this.relations = staticData.getRelations();
@@ -66,17 +65,28 @@ export class AddPersonComponent {
       selectedGenderId: this.selectedGender.Id,
       selectedRelatedId: this.selectedRelated.Id,
       selectedRelationId: this.selectedRelation.Id,
-      targetPersonFullName: this.newConnection!.TartgetPerson!.FullName,
-      targetPersonDataOfBirth: this.newConnection!.TartgetPerson!.DateOfBirth!,
+      targetPersonFullName: this.newConnection!.TargetPerson!.FullName,
+      targetPersonDataOfBirth: this.newConnection!.TargetPerson!.DateOfBirth!,
     });
 
     // calc other connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection, persons!);
 
-    // set persistency texts
+    // set persistency texts -> in last step
     //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
     //this.personsRepo.addConnections(newConnections);
 
-    // reget persons after addition, and reset cache
+    // reget persons after addition, and reset cache -> in last step
+    //this.personsRepo.getPersons().subscribe((personsData) => {
+    //  if (personsData) {
+    //    this.cacheSvc.setCache(personsData, eStorageKeys.AllLocalPersons, [eStorageType.Session]);
+    //  }
+    //});
+
+    this.connsSvc.setLocalCache(persons!, this.newConnection); // between steps
+
+    // handle step 2 UI -> possible complexity
+
+    // handle step 3 UI -> summary
   }
 }

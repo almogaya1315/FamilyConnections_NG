@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { eGender, eRel, IConnection, IFlatConnection, IPerson, IUndecidedConnection } from '../persons/person.model';
+import { ConnectionsService } from './connections.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,14 +10,17 @@ export class CalculationsService {
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
 
-  constructor() {
-  }
+  constructor(private connsSvc: ConnectionsService) { }
 
   // operation Methods
   initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[]) {
     this._personConn = personConn;
     this._relatedConn = relatedConn;
     this._conns = conns;
+  }
+
+  getConns() {
+    return this._conns;
   }
 
   opposite(relation: eRel, gender: eGender): eRel {
@@ -128,13 +132,22 @@ export class CalculationsService {
       if (possibleComplexRel.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
     }
 
-    if (!this.conExists()) {
+    if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
+      let newConn: IConnection = this.connsSvc.createConnection(person, relatedPerson!, relation!, possibleComplexRel.val);
+      if (possibleComplexRel) possibleComplex_debug.push(newConn);
+      newConns.push(newConn);
+      person.FlatConnections.push(newConn.Flat!);
+    }
 
+    if (!opposite) {
+      this.connectBetween(relatedPerson!, person, relation, newConns, possibleComplexRel, possibleComplex_debug, opposite = true);
     }
   }
 
-  private conExists() {
-    return true;
+  private conExists(person: IPerson, related: IPerson, relation: eRel, newConns: IConnection[]) {
+    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == relation);
+    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == relation);
+    return existsInNew || existsInAll;
   }
 
   private farRelation(undecidedConns: IUndecidedConnection[]) {

@@ -52,7 +52,7 @@ export interface IRelationshipInfo {
   Type: eRel,
   //Gender: eGender,
   //Opposite: eRel | eComplexRel | eFarRel,
-  //PossibleComplexRel: eComplexRel,
+  PossibleComplexRel: eRel | null, //eComplexRel
   //Error: string,
 }
 
