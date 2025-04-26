@@ -60,7 +60,7 @@ export class AddPersonComponent {
     var persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session);
 
     // fill new connection
-    this.newConnection = this.connsSvc.fillNewConnection(persons!, {
+    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, persons!, {
       selectedPlaceOfBirthName: this.selectedPlaceOfBirth.Name,
       selectedGenderId: this.selectedGender.Id,
       selectedRelatedId: this.selectedRelated.Id,

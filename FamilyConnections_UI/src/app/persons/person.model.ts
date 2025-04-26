@@ -49,7 +49,7 @@ export interface IUndecidedConnection {
 
 export interface IRelationshipInfo {
   Id: number,
-  Type: eRel,
+  Type: eRel | string,
   //Gender: eGender,
   //Opposite: eRel | eComplexRel | eFarRel,
   PossibleComplexRel: eRel | null, //eComplexRel

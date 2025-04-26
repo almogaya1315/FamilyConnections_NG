@@ -15,29 +15,20 @@ export class ConnectionsService {
     private cacheSvc: CacheService) { }
 
   createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, possibleComplex: eRel | null = null): IConnection {
-    return {
+    let conn = {
       TargetPerson: person,
       RelatedPerson: relatedPerson,
-      Relationship: {
-        Id: relation as number,
-        Type: relation!,
-        PossibleComplexRel: possibleComplex
-      },
+      Relationship: this.newRelationship(relation as number),
       Flat: {
         TargetId: person.Id as number,
         RelatedId: relatedPerson?.Id as number,
         RelationshipId: relation as number
       }
     }
+    return conn;
   }
 
-  fillNewConnection(persons: IPerson[], inputs: Inputs): IConnection {
-
-    let newConnection = this.createConnection(
-      this.personsRepo.getDefaultPerson(),
-      this.personsRepo.getDefaultPerson(),
-      eRel.Undecided
-    );
+  fillNewConnection(newConnection: IConnection, persons: IPerson[], inputs: Inputs): IConnection {
 
     newConnection!.TargetPerson!.Id = Math.max(...persons!.map(p => p.Id as number)) + 1;;
     newConnection!.TargetPerson!.FullName = inputs.targetPersonFullName;
@@ -154,10 +145,10 @@ export class ConnectionsService {
     }));
   }
 
-  private newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo {
+  newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo {
     return {
-      Id: relationshipId,
-      Type: relationshipId as eRel,
+      Id: relationshipId ?? -1,
+      Type: eRel[relationshipId],
       PossibleComplexRel: possibleComplexRel
     }
   }

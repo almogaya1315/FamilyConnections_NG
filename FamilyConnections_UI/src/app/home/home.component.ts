@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { IPerson, IConnection, IRelationshipInfo, eRel } from '../persons/person.model';
 import { PersonsRepositoryService } from '../persons/persons-repository.service';
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
+import { ConnectionsService } from '../services/connections.service';
 
 @Component({
   selector: 'fc-home',
@@ -44,16 +45,13 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private cacheSvc: CacheService,
-    private personsRepo: PersonsRepositoryService) {
+    private personsRepo: PersonsRepositoryService,
+    private connsSvc: ConnectionsService) {
     //this.person = cacheSvc.getCache(eStorageKeys.CurrentPerson, eStorageType.Session);
   }
 
   getRelationship(relatedId: number): IRelationshipInfo {
     var relId = this.person?.FlatConnections.find(f => f.RelatedId == relatedId)?.RelationshipId;
-    return {
-      Id: relId ?? -1,
-      Type: relId as eRel,
-      PossibleComplexRel: null
-    };
+    return this.connsSvc.newRelationship(relId!);
   }
 }
