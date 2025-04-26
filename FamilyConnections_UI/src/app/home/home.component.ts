@@ -52,7 +52,8 @@ export class HomeComponent implements OnInit {
     var relId = this.person?.FlatConnections.find(f => f.RelatedId == relatedId)?.RelationshipId;
     return {
       Id: relId ?? -1,
-      Type: relId as eRel
+      Type: relId as eRel,
+      PossibleComplexRel: null
     };
   }
 }

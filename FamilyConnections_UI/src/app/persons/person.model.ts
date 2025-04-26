@@ -35,7 +35,7 @@ export interface IConnection {
 }
 
 export interface IFlatConnection {
-  TartgetId: number,
+  TargetId: number,
   RelatedId: number,
   RelationshipId: number
 }

@@ -52,7 +52,8 @@ function getConnectionsArray() {
     const connectionsArrayJson = fileSystem.readFileSync(filePath, "utf-8");
     connectionsArrayJson.split('\n').forEach(c => {
       if (c != '') {
-        connections.push(JSON.parse(c));
+        let parsed = JSON.parse(c);
+        connections.push(parsed);
       }
     });
     output = { connectionsArray: connections, errpr: null };
@@ -60,6 +61,7 @@ function getConnectionsArray() {
     var message = "Error - Failed to get connections! " + e;
     output = { connectionsArray: [], error: message };
   }
+
   return output;
 }
 
@@ -77,7 +79,6 @@ function setPersonConnections(person, connections) {
 }
 
 app.post("/api/validateLogin", (req, res) => {
-  //console.log("Req body:", req.body);
   var persons = getPersonsArray().personsArray;
   var loginCredentials = req.body;
   var person = persons.find(p => p.FullName == loginCredentials.FullName);
@@ -114,7 +115,7 @@ app.get('/api/connections', (req, res) => {
   if (connsRes.error) {
     return res.status(500).json({ message: connsRes.error })
   } else {
-    res.send(connsRes.connsArray);
+    res.send(connsRes.connectionsArray);
   }
 })
 

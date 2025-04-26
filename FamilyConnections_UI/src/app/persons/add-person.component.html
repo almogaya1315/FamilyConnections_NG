@@ -9,8 +9,8 @@
             <label for="fullName">Full Name:</label>
             <span *ngIf="fullName.invalid && fullName.dirty" class="text-danger" style="float:right">Required!</span>
           </div>
-          <input [(ngModel)]="newConnection!.TartgetPerson!.FullName" #fullName="ngModel" class="form-control"
-                 required name="fullName" id="fullName" type="text" value="{{newConnection!.TartgetPerson!.FullName}}" />
+          <input [(ngModel)]="newConnection!.TargetPerson!.FullName" #fullName="ngModel" class="form-control"
+                 required name="fullName" id="fullName" type="text" value="{{newConnection!.TargetPerson!.FullName}}" />
         </div>
         <br />
         <div class="form-group">
@@ -18,8 +18,8 @@
             <label for="dateOfBirth">Date of Birth:</label>
             <span *ngIf="dateOfBirth.invalid && dateOfBirth.dirty" class="text-danger" style="float:right">Required!</span>
           </div>
-          <input [(ngModel)]="newConnection!.TartgetPerson!.DateOfBirth" #dateOfBirth="ngModel" class="form-control"
-                 required name="dateOfBirth" id="dateOfBirth" type="date" value="{{newConnection!.TartgetPerson!.DateOfBirth}}" />
+          <input [(ngModel)]="newConnection!.TargetPerson!.DateOfBirth" #dateOfBirth="ngModel" class="form-control"
+                 required name="dateOfBirth" id="dateOfBirth" type="date" value="{{newConnection!.TargetPerson!.DateOfBirth}}" />
         </div>
         <br />
         <div class="form-group">

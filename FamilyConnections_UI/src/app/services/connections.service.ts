@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { eGender, eRel, IConnection, IFlatConnection, IPerson, IUndecidedConnection } from '../persons/person.model';
+import { eGender, eRel, IConnection, IFlatConnection, IPerson, IRelationshipInfo, IUndecidedConnection } from '../persons/person.model';
 import { PersonsRepositoryService } from '../persons/persons-repository.service';
 import { CacheService, eStorageKeys, eStorageType } from './cache.service';
 import { CalculationsService } from './calculations.service';
@@ -24,7 +24,7 @@ export class ConnectionsService {
         PossibleComplexRel: possibleComplex
       },
       Flat: {
-        TartgetId: person.Id as number,
+        TargetId: person.Id as number,
         RelatedId: relatedPerson?.Id as number,
         RelationshipId: relation as number
       }
@@ -48,7 +48,7 @@ export class ConnectionsService {
     newConnection!.Relationship!.Id = inputs.selectedRelationId;
 
     var flatCon: IFlatConnection = {
-      TartgetId: newConnection!.TargetPerson!.Id as number,
+      TargetId: newConnection!.TargetPerson!.Id as number,
       RelatedId: newConnection!.RelatedPerson!.Id as number,
       RelationshipId: newConnection!.Relationship!.Id
     };
@@ -79,92 +79,11 @@ export class ConnectionsService {
   }
 
   private opposite(flatCon: IFlatConnection, relatedPerson: IPerson): IFlatConnection {
-    //let oppositeRel = eRel.FarRel;
-    //let relation = flatCon.RelationshipId as eRel;
-    //let gender = relatedPerson.Gender;
-
-    //switch (relation) {
-    //  case eRel.Mother:
-    //  case eRel.Father:
-    //    oppositeRel = gender == eGender.Female ? eRel.Daughter : eRel.Son;
-    //    break;
-    //  case eRel.Sister:
-    //  case eRel.Brother:
-    //    oppositeRel = gender == eGender.Female ? eRel.Sister : eRel.Brother;
-    //    break;
-    //  case eRel.Daughter:
-    //  case eRel.Son:
-    //    oppositeRel = gender == eGender.Female ? eRel.Mother : eRel.Father;
-    //    break;
-    //  case eRel.Wife:
-    //    oppositeRel = eRel.Husband;
-    //    break;
-    //  case eRel.Husband:
-    //    oppositeRel = eRel.Wife;
-    //    break;
-    //  case eRel.Aunt:
-    //  case eRel.Uncle:
-    //    oppositeRel = gender == eGender.Female ? eRel.Niece : eRel.Nephew;
-    //    break;
-    //  case eRel.Cousin:
-    //    oppositeRel = eRel.Cousin;
-    //    break;
-    //  case eRel.Niece:
-    //  case eRel.Nephew:
-    //    oppositeRel = gender == eGender.Female ? eRel.Aunt : eRel.Uncle;
-    //    break;
-    //  case eRel.GrandMother:
-    //  case eRel.GrandFather:
-    //    oppositeRel = eRel.GrandChild;
-    //    break;
-    //  case eRel.GrandChild:
-    //    oppositeRel = gender == eGender.Female ? eRel.GrandMother : eRel.GrandFather;
-    //    break;
-    //  case eRel.MotherInLaw:
-    //  case eRel.FatherInLaw:
-    //    oppositeRel = gender == eGender.Female ? eRel.DaughterInLaw : eRel.SonInLaw;
-    //    break;
-    //  case eRel.SisterInLaw:
-    //  case eRel.BrotherInLaw:
-    //    oppositeRel = gender == eGender.Female ? eRel.SisterInLaw : eRel.BrotherInLaw;
-    //    break;
-    //  case eRel.DaughterInLaw:
-    //  case eRel.SonInLaw:
-    //    oppositeRel = gender == eGender.Female ? eRel.MotherInLaw : eRel.FatherInLaw;
-    //    break;
-    //  case eRel.StepMother:
-    //  case eRel.StepFather:
-    //    oppositeRel = gender == eGender.Female ? eRel.StepDaughter : eRel.StepSon;
-    //    break;
-    //  case eRel.StepSister:
-    //  case eRel.StepBrother:
-    //    oppositeRel = gender == eGender.Female ? eRel.StepSister : eRel.StepBrother;
-    //    break;
-    //  case eRel.StepDaughter:
-    //  case eRel.StepSon:
-    //    oppositeRel = gender == eGender.Female ? eRel.StepMother : eRel.StepFather;
-    //    break;
-    //  case eRel.ExPartner:
-    //    oppositeRel = eRel.ExPartner;
-    //    break;
-    //  case eRel.GreatGrandMother:
-    //  case eRel.GreatGrandFather:
-    //    oppositeRel = gender == eGender.Female ? eRel.GreatGrandDaughter : eRel.GreatGrandSon;
-    //    break;
-    //  case eRel.GreatGrandDaughter:
-    //  case eRel.GreatGrandSon:
-    //    oppositeRel = gender == eGender.Female ? eRel.GreatGrandMother : eRel.GreatGrandFather;
-    //    break;
-    //  case eRel.FarRel:
-    //    oppositeRel = eRel.FarRel;
-    //    break;
-    //}
-
     let oppositeRel = this.calcSvc.opposite(flatCon.RelationshipId as eRel, relatedPerson.Gender);
 
     return {
-      TartgetId: flatCon.RelatedId,
-      RelatedId: flatCon.TartgetId,
+      TargetId: flatCon.RelatedId,
+      RelatedId: flatCon.TargetId,
       RelationshipId: oppositeRel as number
     };
   }
@@ -206,7 +125,7 @@ export class ConnectionsService {
 
           debugger;
 
-          this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex);
+          this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
         });
 
       } catch (e) {
@@ -214,17 +133,14 @@ export class ConnectionsService {
       }
     });
 
-    return newConns;
+    return newConns.map(c => c.Flat!);
   }
 
   private mapFlatConnections(flatConns: IFlatConnection[], persons: IPerson[]): IConnection[] {
     return flatConns.map(f => ({
-      TargetPerson: persons.find(p => p.Id == f.TartgetId)!,
+      TargetPerson: persons.find(p => p.Id == f.TargetId)!,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId)!,
-      Relationship: {
-        Id: f.RelationshipId,
-        Type: f.RelationshipId as eRel
-      },
+      Relationship: this.newRelationship(f.RelationshipId),
       Flat: f
     }));
   }
@@ -233,12 +149,17 @@ export class ConnectionsService {
     return person.FlatConnections.map(f => ({
       TargetPerson: person,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
-      Relationship: {
-        Id: f.RelationshipId,
-        Type: f.RelationshipId as eRel
-      },
+      Relationship: this.newRelationship(f.RelationshipId),
       Flat: f
     }));
+  }
+
+  private newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo {
+    return {
+      Id: relationshipId,
+      Type: relationshipId as eRel,
+      PossibleComplexRel: possibleComplexRel
+    }
   }
 }
 

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { eGender, eRel, IConnection, IFlatConnection, IPerson, IUndecidedConnection } from '../persons/person.model';
-import { ConnectionsService } from './connections.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +9,7 @@ export class CalculationsService {
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
 
-  constructor(private connsSvc: ConnectionsService) { }
+  constructor() { }
 
   // operation Methods
   initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[]) {
@@ -24,7 +23,7 @@ export class CalculationsService {
   }
 
   opposite(relation: eRel, gender: eGender): eRel {
-  //opposite(flatCon: IFlatConnection, relatedPerson: IPerson): eRel {
+    //opposite(flatCon: IFlatConnection, relatedPerson: IPerson): eRel {
     let oppositeRel = eRel.FarRel;
     //let relation = flatCon.RelationshipId as eRel;
     //let gender = relatedPerson.Gender;
@@ -123,8 +122,10 @@ export class CalculationsService {
     return relation;
   }
 
-  connectBetween(person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
-    newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false) {
+  connectBetween(
+    person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
+    newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false,
+    createConnection: (person: IPerson, related: IPerson, relation: eRel, complexRel: eRel) => IConnection) {
     if (relation == eRel.FarRel || relation == eRel.Undecided) return;
 
     if (opposite) {
@@ -133,14 +134,14 @@ export class CalculationsService {
     }
 
     if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
-      let newConn: IConnection = this.connsSvc.createConnection(person, relatedPerson!, relation!, possibleComplexRel.val);
+      let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel.val!);
       if (possibleComplexRel) possibleComplex_debug.push(newConn);
       newConns.push(newConn);
       person.FlatConnections.push(newConn.Flat!);
     }
 
     if (!opposite) {
-      this.connectBetween(relatedPerson!, person, relation, newConns, possibleComplexRel, possibleComplex_debug, opposite = true);
+      this.connectBetween(relatedPerson!, person, relation, newConns, possibleComplexRel, possibleComplex_debug, opposite = true, createConnection);
     }
   }
 
