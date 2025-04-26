@@ -12,7 +12,7 @@ import { PersonsRepositoryService } from './persons-repository.service';
   styleUrls: ['./add-person.component.css']
 })
 export class AddPersonComponent {
-  //newPerson: IPerson;
+  persons: IPerson[] = [];
   selectedPlaceOfBirth: INameToId = { Id: -1, Name: '' };
   selectedGender: INameToId = { Id: -1, Name: '' };
   selectedRelated: INameToId = { Id: -1, Name: '' };
@@ -39,11 +39,15 @@ export class AddPersonComponent {
     this.genders = staticData.getGenders();
     this.relations = staticData.getRelations();
 
-    var persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session);
-    this.personsItems = persons!.map(p => ({
+    this.persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session)!;
+    this.personsItems = this.persons!.map(p => ({
       Name: p.FullName,
       Id: typeof p.Id === 'string' ? parseInt(p.Id, 10) : p.Id,
     }));
+
+    this.personsRepo.getConnections().subscribe((conns) => {
+      this.cacheSvc.setCache(conns, eStorageKeys.AllLocalConnections, [eStorageType.Session]);
+    });
 
     //this.personsRepo.getPersons().subscribe((personsData) => {
     //  if (personsData) {
@@ -57,10 +61,8 @@ export class AddPersonComponent {
 
   next(credentials: any) {
 
-    var persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session);
-
     // fill new connection
-    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, persons!, {
+    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, this.persons!, {
       selectedPlaceOfBirthName: this.selectedPlaceOfBirth.Name,
       selectedGenderId: this.selectedGender.Id,
       selectedRelatedId: this.selectedRelated.Id,
@@ -70,7 +72,7 @@ export class AddPersonComponent {
     });
 
     // calc other connections
-    let newConnections = this.connsSvc.calcConnections(this.newConnection, persons!);
+    let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!);
 
     // set persistency texts -> in last step
     //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
@@ -83,10 +85,19 @@ export class AddPersonComponent {
     //  }
     //});
 
-    this.connsSvc.setLocalCache(persons!, this.newConnection); // between steps
+    this.connsSvc.setLocalCache(this.persons!, this.newConnection); // between steps
 
     // handle step 2 UI -> possible complexity
 
     // handle step 3 UI -> summary
+  }
+
+  fillTest() {
+    this.newConnection!.TargetPerson!.FullName = "Test";
+    this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
+    this.selectedPlaceOfBirth = this.countries.find(c => c.Id == 1)!;
+    this.selectedGender = { Id: 1, Name: "Male" };
+    this.selectedRelated = { Id: 2, Name: "Keren Matsliah" };
+    this.selectedRelation = { Id: 2, Name: "Sister" };
   }
 }

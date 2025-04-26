@@ -70,6 +70,7 @@
           <input [disabled]="fullName.invalid || dateOfBirth.invalid ||
                  selectedPlaceOfBirth.Id == -1 || selectedGender.Id == -1 || selectedRelated.Id == -1 || selectedRelation.Id == -1"
                  type="submit" value="Next" class="btn btn-primary nextBtn" />
+          <input hidden value="Fill" type="button" (click)="fillTest()" />
         </div>
         <br />
       </form>

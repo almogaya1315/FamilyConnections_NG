@@ -37,6 +37,7 @@ export class ConnectionsService {
     newConnection!.TargetPerson!.Gender = inputs.selectedGenderId;
     newConnection!.RelatedPerson!.Id = inputs.selectedRelatedId;
     newConnection!.Relationship!.Id = inputs.selectedRelationId;
+    newConnection!.Relationship!.Type = eRel[inputs.selectedRelationId];
 
     var flatCon: IFlatConnection = {
       TargetId: newConnection!.TargetPerson!.Id as number,
@@ -89,18 +90,11 @@ export class ConnectionsService {
     persons.reverse();
     persons.forEach(person => {
       try {
-        debugger;
-
         let personConns: IConnection[] = this.mapPersonFlatConnections(person, persons);
-
-        debugger;
-
         let relatedConns: IConnection[] = personConns
           .filter(c => c.RelatedPerson!.Id != person.Id)
           .flatMap(c => this.mapPersonFlatConnections(c.RelatedPerson!, persons)
           );
-
-        debugger;
 
         relatedConns.forEach(relatedConn => {
           let relation: eRel | null;
@@ -114,8 +108,6 @@ export class ConnectionsService {
           this.calcSvc.initCalculation(personConn!, relatedConn, conns);
           relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
 
-          debugger;
-
           this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
         });
 
@@ -128,12 +120,13 @@ export class ConnectionsService {
   }
 
   private mapFlatConnections(flatConns: IFlatConnection[], persons: IPerson[]): IConnection[] {
-    return flatConns.map(f => ({
+    let flatMap = flatConns.map(f => ({
       TargetPerson: persons.find(p => p.Id == f.TargetId)!,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId)!,
       Relationship: this.newRelationship(f.RelationshipId),
       Flat: f
     }));
+    return flatMap;
   }
 
   private mapPersonFlatConnections(person: IPerson, persons: IPerson[]): IConnection[] {
