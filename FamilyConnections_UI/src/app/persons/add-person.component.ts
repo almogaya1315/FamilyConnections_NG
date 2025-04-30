@@ -59,17 +59,22 @@ export class AddPersonComponent {
     //});
   }
 
-  next(credentials: any) {
+  compareById = (a: any, b: any) => a?.Id === b?.Id;
 
-    // fill new connection
-    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, this.persons!, {
+  private inputs() {
+    return {
       selectedPlaceOfBirthName: this.selectedPlaceOfBirth.Name,
       selectedGenderId: this.selectedGender.Id,
       selectedRelatedId: this.selectedRelated.Id,
       selectedRelationId: this.selectedRelation.Id,
       targetPersonFullName: this.newConnection!.TargetPerson!.FullName,
       targetPersonDataOfBirth: this.newConnection!.TargetPerson!.DateOfBirth!,
-    });
+    };
+  }
+
+  next(credentials: any) {
+    // fill new connection
+    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, this.persons!, this.inputs());
 
     // calc other connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!);
@@ -93,11 +98,11 @@ export class AddPersonComponent {
   }
 
   fillTest() {
-    this.newConnection!.TargetPerson!.FullName = "Test";
+    this.newConnection!.TargetPerson!.FullName = "Racheli Paz";
     this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
-    this.selectedPlaceOfBirth = this.countries.find(c => c.Id == 1)!;
-    this.selectedGender = { Id: 1, Name: "Male" };
-    this.selectedRelated = { Id: 2, Name: "Keren Matsliah" };
-    this.selectedRelation = { Id: 2, Name: "Sister" };
+    this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    this.selectedRelation = this.relations.find(r => r.Id === 2)!;
   }
 }

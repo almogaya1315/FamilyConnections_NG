@@ -10,7 +10,7 @@
             <span *ngIf="fullName.invalid && fullName.dirty" class="text-danger" style="float:right">Required!</span>
           </div>
           <input [(ngModel)]="newConnection!.TargetPerson!.FullName" #fullName="ngModel" class="form-control"
-                 required name="fullName" id="fullName" type="text" value="{{newConnection!.TargetPerson!.FullName}}" />
+                 required name="fullName" id="fullName" type="text" />
         </div>
         <br />
         <div class="form-group">
@@ -19,7 +19,7 @@
             <span *ngIf="dateOfBirth.invalid && dateOfBirth.dirty" class="text-danger" style="float:right">Required!</span>
           </div>
           <input [(ngModel)]="newConnection!.TargetPerson!.DateOfBirth" #dateOfBirth="ngModel" class="form-control"
-                 required name="dateOfBirth" id="dateOfBirth" type="date" value="{{newConnection!.TargetPerson!.DateOfBirth}}" />
+                 required name="dateOfBirth" id="dateOfBirth" type="date" />
         </div>
         <br />
         <div class="form-group">
@@ -27,7 +27,7 @@
             <label for="selectedPlaceOfBirth">Place of Birth:</label>
             <span *ngIf="!selectedPlaceOfBirth" class="text-danger" style="float:right">Required!</span>
           </div>
-          <select required name="select" [(ngModel)]="selectedPlaceOfBirth" type="select" class="form-select">
+          <select required name="select" type="select" [(ngModel)]="selectedPlaceOfBirth" [compareWith]="compareById" class="form-select">
             <option *ngFor="let country of countries" [ngValue]="country">{{country.Name}}</option>
           </select>
         </div>
@@ -37,7 +37,7 @@
             <label for="selectedGender">Gender:</label>
             <span *ngIf="!selectedGender" class="text-danger" style="float:right">Required!</span>
           </div>
-          <select required name="select" [(ngModel)]="selectedGender" typeof="select" class="form-select">
+          <select required name="select" type="select" [(ngModel)]="selectedGender" [compareWith]="compareById" class="form-select">
             <option *ngFor="let gen of genders" [ngValue]="gen">{{gen.Name}}</option>
           </select>
         </div>
@@ -48,10 +48,9 @@
             <label for="selectedRelated">Connecting to:</label>
             <span *ngIf="!selectedRelated" class="text-danger" style="float:right">Required!</span>
           </div>
-          <select required name="select" type="select" [(ngModel)]="selectedRelated" class="form-select">
+          <select required name="select" type="select" [(ngModel)]="selectedRelated" [compareWith]="compareById"V class="form-select">
             <option *ngFor="let person of personsItems" [ngValue]="person">{{person.Name}}</option>
           </select>
-
         </div>
         <br />
         <div class="form-group">
@@ -70,7 +69,7 @@
           <input [disabled]="fullName.invalid || dateOfBirth.invalid ||
                  selectedPlaceOfBirth.Id == -1 || selectedGender.Id == -1 || selectedRelated.Id == -1 || selectedRelation.Id == -1"
                  type="submit" value="Next" class="btn btn-primary nextBtn" />
-          <input hidden value="Fill" type="button" (click)="fillTest()" />
+          <input value="Fill" type="button" (click)="fillTest()" />
         </div>
         <br />
       </form>
@@ -91,3 +90,6 @@
     </div>
   </div>
 </div>
+
+
+

@@ -92,8 +92,9 @@ export class ConnectionsService {
       try {
         let personConns: IConnection[] = this.mapPersonFlatConnections(person, persons);
         let relatedConns: IConnection[] = personConns
-          .filter(c => c.RelatedPerson!.Id != person.Id)
           .flatMap(c => this.mapPersonFlatConnections(c.RelatedPerson!, persons)
+            .filter(c => c.RelatedPerson?.Id != person.Id)
+            .filter(c => c.RelatedPerson != null)
           );
 
         relatedConns.forEach(relatedConn => {
