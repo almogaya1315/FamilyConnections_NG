@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit {
     //this.person = cacheSvc.getCache(eStorageKeys.CurrentPerson, eStorageType.Session);
   }
 
-  getRelationship(relatedId: number): IRelationshipInfo {
+  getRelationship(relatedId: number): IRelationshipInfo | null {
     var relId = this.person?.FlatConnections.find(f => f.RelatedId == relatedId)?.RelationshipId;
     return this.connsSvc.newRelationship(relId!);
   }

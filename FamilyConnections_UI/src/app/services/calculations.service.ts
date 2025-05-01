@@ -112,6 +112,15 @@ export class CalculationsService {
     possibleComplexRel: { val: eRel | null },
     undecidedConns: IUndecidedConnection[]
   ): eRel | null {
+
+    if (this._personConn?.TargetPerson?.Id == 4 && this._personConn.RelatedPerson?.Id == 3) {
+      let test = '';
+    }
+
+    if (this._personConn?.TargetPerson?.Id == 3 && this._personConn.RelatedPerson?.Id == 4) {
+      let test = '';
+    }
+
     let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
@@ -125,19 +134,21 @@ export class CalculationsService {
   connectBetween(
     person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
     newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false,
-    createConnection: (person: IPerson, related: IPerson, relation: eRel, complexRel: eRel) => IConnection) {
+    createConnection: (person: IPerson, related: IPerson, relation: eRel, complexRel: eRel | null) => IConnection | null) {
+
     if (relation == eRel.FarRel || relation == eRel.Undecided) return;
 
     if (opposite) {
       relation = this.opposite(relation!, relatedPerson!.Gender);
-      if (possibleComplexRel.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
+      if (possibleComplexRel != undefined && possibleComplexRel?.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
     }
 
     if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
-      let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel.val!);
+      let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel?.val)!;
       if (possibleComplexRel) possibleComplex_debug.push(newConn);
       newConns.push(newConn);
-      person.FlatConnections.push(newConn.Flat!);
+      let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
+      if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
     }
 
     if (!opposite) {
@@ -146,8 +157,8 @@ export class CalculationsService {
   }
 
   private conExists(person: IPerson, related: IPerson, relation: eRel, newConns: IConnection[]) {
-    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == relation);
-    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == relation);
+    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == eRel[relation]);
+    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == eRel[relation]);
     return existsInNew || existsInAll;
   }
 
@@ -413,65 +424,69 @@ export class CalculationsService {
 
   // has Methods
   private hasSpouse(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.Wife || conn.Relationship!.Type == eRel.Husband;
+    return conn.Relationship!.Type == eRel[eRel.Wife] || conn.Relationship!.Type == eRel[eRel.Husband];
   }
   private hasChild(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.Daughter || conn.Relationship!.Type == eRel.Son;
+    return conn.Relationship!.Type == eRel[eRel.Daughter] || conn.Relationship!.Type == eRel[eRel.Son];
   }
   private hasParent(conn: IConnection) {
-    return conn.Relationship?.Type == eRel.Mother || conn.Relationship?.Type == eRel.Father;
+    return conn.Relationship!.Type == eRel[eRel.Mother] || conn.Relationship!.Type == eRel[eRel.Father];
   }
   private hasSibling(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.Sister || conn.Relationship!.Type == eRel.Brother;
+    return conn.Relationship!.Type == eRel[eRel.Sister] || conn.Relationship!.Type == eRel[eRel.Brother];
   }
   private hasSiblingChild(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.Niece || conn.Relationship!.Type == eRel.Nephew;
+    return conn.Relationship!.Type == eRel[eRel.Niece] || conn.Relationship!.Type == eRel[eRel.Nephew];
   }
   private hasSiblingInLaw(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.SisterInLaw || conn.Relationship!.Type == eRel.BrotherInLaw;
+    return conn.Relationship!.Type == eRel[eRel.SisterInLaw] || conn.Relationship!.Type == eRel[eRel.BrotherInLaw];
   }
   private hasParentSibling(conn: IConnection) {
-    return conn.Relationship!.Type == eRel.Aunt || conn.Relationship!.Type == eRel.Uncle;
+    return conn.Relationship!.Type == eRel[eRel.Aunt] || conn.Relationship!.Type == eRel[eRel.Uncle];
   }
 
   // is methods
+  private isFemale() {
+    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female;
+  }
+
   private isGrandParent() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.GrandMother : eRel.GrandFather;
+    return this.isFemale() ? eRel.GrandMother : eRel.GrandFather;
   }
   private isSibling() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Sister : eRel.Brother;
+    return this.isFemale() ? eRel.Sister : eRel.Brother;
   }
   private isParentSibling() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Aunt : eRel.Uncle;
+    return this.isFemale() ? eRel.Aunt : eRel.Uncle;
   }
   private isParent() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Mother : eRel.Father;
+    return this.isFemale() ? eRel.Mother : eRel.Father;
   }
   private isStepParent() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepMother : eRel.StepFather;
+    return this.isFemale() ? eRel.StepMother : eRel.StepFather;
   }
   private isSiblingChild() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Niece : eRel.Nephew;
+    return this.isFemale() ? eRel.Niece : eRel.Nephew;
   }
   private isSiblingInLaw() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.SisterInLaw : eRel.BrotherInLaw;
+    return this.isFemale() ? eRel.SisterInLaw : eRel.BrotherInLaw;
   }
   private isChild() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Daughter : eRel.Son;
+    return this.isFemale() ? eRel.Daughter : eRel.Son;
   }
   private isStepChild() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepDaughter : eRel.StepSon;
+    return this.isFemale() ? eRel.StepDaughter : eRel.StepSon;
   }
   private isParentInLaw() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.MotherInLaw : eRel.FatherInLaw;
+    return this.isFemale() ? eRel.MotherInLaw : eRel.FatherInLaw;
   }
   private isStepSibling() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.StepSister : eRel.StepBrother;
+    return this.isFemale() ? eRel.StepSister : eRel.StepBrother;
   }
   private isChildInLaw() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.DaughterInLaw : eRel.SonInLaw;
+    return this.isFemale() ? eRel.DaughterInLaw : eRel.SonInLaw;
   }
   private isSpouse() {
-    return this._relatedConn!.RelatedPerson!.Gender == eGender.Female ? eRel.Wife : eRel.Husband;
+    return this.isFemale() ? eRel.Wife : eRel.Husband;
   }
 }

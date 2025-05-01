@@ -74,7 +74,7 @@ export class AddPersonComponent {
 
   next(credentials: any) {
     // fill new connection
-    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection, this.persons!, this.inputs());
+    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection!, this.persons!, this.inputs());
 
     // calc other connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!);

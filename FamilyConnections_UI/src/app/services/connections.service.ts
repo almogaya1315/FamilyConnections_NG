@@ -14,11 +14,12 @@ export class ConnectionsService {
     private calcSvc: CalculationsService,
     private cacheSvc: CacheService) { }
 
-  createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, possibleComplex: eRel | null = null): IConnection {
+  createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, possibleComplex: eRel | null = null): IConnection | null {
+    let newRel = ConnectionsService.newRelationship(relation as number);
     let conn = {
       TargetPerson: person,
       RelatedPerson: relatedPerson,
-      Relationship: this.newRelationship(relation as number),
+      Relationship: newRel,
       Flat: {
         TargetId: person.Id as number,
         RelatedId: relatedPerson?.Id as number,
@@ -86,6 +87,9 @@ export class ConnectionsService {
     let possibleComplex: IConnection[] = [];
     let undecidedConns: IUndecidedConnection[] = [];
 
+    let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
+    let conns = this.mapFlatConnections(flatConns, persons);
+
     // reverse to start with the new added person
     persons.reverse();
     persons.forEach(person => {
@@ -102,10 +106,8 @@ export class ConnectionsService {
           let personConn = personConns.find(pc => pc.RelatedPerson!.Id == relatedConn.TargetPerson!.Id);
 
           //ComplexRel -> Step, InLaw, Great, Ex, Far
-          let possibleComplexRel: { val: eRel | null };
-
-          let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
-          let conns = this.mapFlatConnections(flatConns, persons);
+          let possibleComplexRel: { val: eRel | null } = { val: null };
+          
           this.calcSvc.initCalculation(personConn!, relatedConn, conns);
           relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
 
@@ -124,7 +126,7 @@ export class ConnectionsService {
     let flatMap = flatConns.map(f => ({
       TargetPerson: persons.find(p => p.Id == f.TargetId)!,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId)!,
-      Relationship: this.newRelationship(f.RelationshipId),
+      Relationship: ConnectionsService.newRelationship(f.RelationshipId),
       Flat: f
     }));
     return flatMap;
@@ -134,17 +136,22 @@ export class ConnectionsService {
     return person.FlatConnections.map(f => ({
       TargetPerson: person,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
-      Relationship: this.newRelationship(f.RelationshipId),
+      Relationship: ConnectionsService.newRelationship(f.RelationshipId),
       Flat: f
     }));
   }
 
-  newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo {
-    return {
+  newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo | null {
+    return ConnectionsService.newRelationship(relationshipId, possibleComplexRel);
+  }
+
+  private static newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo | null {
+    let rel = {
       Id: relationshipId ?? -1,
       Type: eRel[relationshipId],
       PossibleComplexRel: possibleComplexRel
     }
+    return rel;
   }
 }
 
