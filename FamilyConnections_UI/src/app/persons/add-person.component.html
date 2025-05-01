@@ -87,7 +87,7 @@
   <div [ngClass]="{'verify': !verifyDisabled, 'verify-disabled': verifyDisabled}">
     <h4 class="sectionHeader">VERIFY CONNECTIONS...</h4>
     <div class="divider"></div>
-    <div class="sectionContainer" style="height:90%">
+    <div *ngIf="!verifyDisabled" class="sectionContainer" style="height:90%">
 
       <div *ngIf="spinnerVerify" class="loader-overlay">
         <div class="spinner"></div>
