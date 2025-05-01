@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { delay, timer } from 'rxjs';
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
 import { ConnectionsService } from '../services/connections.service';
 import { StaticDataService } from '../services/static-data.service';
+import { WaiterService } from '../services/waiter.service';
 import { INameToId } from '../shared/common.model';
 import { eGender, eRel, IConnection, IFlatConnection, IPerson, IUndecidedConnection } from './person.model';
 import { PersonsRepositoryService } from './persons-repository.service';
@@ -29,11 +31,19 @@ export class AddPersonComponent {
   personsItems: INameToId[] = [];
   relations: INameToId[] = [];
 
+  spinnerWelcome: boolean = false;
+  welcomeDisabled: boolean = false;
+  spinnerVerify: boolean = false;
+  verifyDisabled: boolean = true;
+  spinnerComplete: boolean = false;
+  completeDisabled: boolean = true;
+
   constructor(
     private personsRepo: PersonsRepositoryService,
     private staticData: StaticDataService,
     private cacheSvc: CacheService,
-    private connsSvc: ConnectionsService) {
+    private connsSvc: ConnectionsService,
+    private wait: WaiterService) {
 
     this.countries = staticData.getCountries();
     this.genders = staticData.getGenders();
@@ -72,29 +82,46 @@ export class AddPersonComponent {
     };
   }
 
-  next(credentials: any) {
+  async next(credentials: any) {
+    this.spinnerWelcome = true;
+
     // fill new connection
     this.newConnection = this.connsSvc.fillNewConnection(this.newConnection!, this.persons!, this.inputs());
 
     // calc other connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!);
 
-    // set persistency texts -> in last step
-    //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
-    //this.personsRepo.addConnections(newConnections);
+    this.connsSvc.setLocalCache(this.persons!, newConnections); // between steps
 
-    // reget persons after addition, and reset cache -> in last step
-    //this.personsRepo.getPersons().subscribe((personsData) => {
-    //  if (personsData) {
-    //    this.cacheSvc.setCache(personsData, eStorageKeys.AllLocalPersons, [eStorageType.Session]);
-    //  }
-    //});
+    await this.wait.seconds(2);
 
-    this.connsSvc.setLocalCache(this.persons!, this.newConnection); // between steps
+    this.spinnerWelcome = false;
+    this.welcomeDisabled = true;
+    this.verifyDisabled = false;
 
     // handle step 2 UI -> possible complexity
 
     // handle step 3 UI -> summary
+
+    // set persistency texts -> in last step completion
+    //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
+    //this.personsRepo.addConnections(newConnections);
+  }
+
+  async backTo(section: string) {
+    if (section == 'welcome') {
+      await this.backToWelcome();
+    } else { // if (section == 'verify') {
+
+    } 
+  }
+
+  private async backToWelcome() {
+    this.spinnerVerify = true;
+    this.verifyDisabled = true;
+    await this.wait.seconds(1);
+    this.spinnerVerify = false;
+    this.welcomeDisabled = false;
   }
 
   fillTest() {

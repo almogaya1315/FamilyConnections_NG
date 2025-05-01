@@ -29,6 +29,18 @@ export class ConnectionsService {
     return conn;
   }
 
+  private fillPerson(person: IPerson, persons: IPerson[], inputs: Inputs | null = null) {
+    if (inputs != null) {
+      person!.Id = Math.max(...persons!.map(p => p.Id as number)) + 1;;
+      person!.FullName = inputs.targetPersonFullName;
+      person!.DateOfBirth = inputs.targetPersonDataOfBirth;
+      person!.PlaceOfBirth = inputs.selectedPlaceOfBirthName;
+      person!.Gender = inputs.selectedGenderId;
+    }
+    else {
+      person = persons.find(p => p.Id == person.Id)!;
+    }
+  }
   fillNewConnection(newConnection: IConnection, persons: IPerson[], inputs: Inputs): IConnection {
 
     newConnection!.TargetPerson!.Id = Math.max(...persons!.map(p => p.Id as number)) + 1;;
@@ -53,35 +65,28 @@ export class ConnectionsService {
     return newConnection;
   }
 
-  calcConnections(newConnection: IConnection, persons: IPerson[]): IFlatConnection[] {
+  calcConnections(newConnection: IConnection, persons: IPerson[]): IConnection[] {
     persons!.push(newConnection!.TargetPerson!)
     var newConnections = this.checkAllConnections(persons!);
-    let flatCon = newConnection!.Flat!;
-    var relatedPerson = persons?.find(p => p.Id == flatCon.RelatedId);
-    var oppositeFlatCon = this.opposite(flatCon, relatedPerson!);
-    newConnections.push(flatCon, oppositeFlatCon);
+    newConnection.RelatedPerson = persons.find(p => p.Id == newConnection.RelatedPerson!.Id)!;
+    var oppositeCon = this.opposite(newConnection);
+    newConnections.push(newConnection, oppositeCon);
     return newConnections;
   }
 
-  setLocalCache(persons: IPerson[], newConnection: IConnection) {
-    persons?.push(newConnection.TargetPerson!);
+  setLocalCache(persons: IPerson[], newConnections: IConnection[]) {
     this.cacheSvc.setCache(persons, eStorageKeys.AllLocalPersons, [eStorageType.Session]);
     let conns = this.calcSvc.getConns();
-    conns.push(newConnection);
+    newConnections.forEach(c => conns.push(c));
     this.cacheSvc.setCache(conns, eStorageKeys.AllLocalConnections, [eStorageType.Session]);
   }
 
-  private opposite(flatCon: IFlatConnection, relatedPerson: IPerson): IFlatConnection {
-    let oppositeRel = this.calcSvc.opposite(flatCon.RelationshipId as eRel, relatedPerson.Gender);
-
-    return {
-      TargetId: flatCon.RelatedId,
-      RelatedId: flatCon.TargetId,
-      RelationshipId: oppositeRel as number
-    };
+  private opposite(con: IConnection): IConnection {
+    let oppositeRel = this.calcSvc.opposite(con.Relationship!.Id as eRel, con.RelatedPerson?.Gender!);
+    return this.createConnection(con.RelatedPerson!, con.TargetPerson!, oppositeRel)!;
   }
 
-  private checkAllConnections(persons: IPerson[]): IFlatConnection[] {
+  private checkAllConnections(persons: IPerson[]): IConnection[] {
     let newConns: IConnection[] = [];
 
     let possibleComplex: IConnection[] = [];
@@ -89,6 +94,7 @@ export class ConnectionsService {
 
     let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
     let conns = this.mapFlatConnections(flatConns, persons);
+
 
     // reverse to start with the new added person
     persons.reverse();
@@ -104,14 +110,13 @@ export class ConnectionsService {
         relatedConns.forEach(relatedConn => {
           let relation: eRel | null;
           let personConn = personConns.find(pc => pc.RelatedPerson!.Id == relatedConn.TargetPerson!.Id);
-
-          //ComplexRel -> Step, InLaw, Great, Ex, Far
-          let possibleComplexRel: { val: eRel | null } = { val: null };
-          
           this.calcSvc.initCalculation(personConn!, relatedConn, conns);
-          relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
-
-          this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
+          if (!this.calcSvc.anyConExists(person, relatedConn.TargetPerson!)) {
+            //ComplexRel -> Step, InLaw, Great, Ex, Far
+            let possibleComplexRel: { val: eRel | null } = { val: null };
+            relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
+            this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
+          }
         });
 
       } catch (e) {
@@ -119,7 +124,8 @@ export class ConnectionsService {
       }
     });
 
-    return newConns.map(c => c.Flat!);
+    //return newConns.map(c => c.Flat!);
+    return newConns;
   }
 
   private mapFlatConnections(flatConns: IFlatConnection[], persons: IPerson[]): IConnection[] {

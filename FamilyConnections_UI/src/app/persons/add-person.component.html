@@ -1,8 +1,15 @@
 <div class="page-center">
-  <div class="welcome">
+  <!--class="welcome"-->
+  <div [ngClass]="{'welcome': !welcomeDisabled, 'welcome-disabled': welcomeDisabled}">
+
     <h4 class="sectionHeader">WELCOME, NEW FAMILY MEMBER!</h4>
     <div class="divider"></div>
     <div class="sectionContainer">
+
+      <div *ngIf="spinnerWelcome" class="loader-overlay">
+        <div class="spinner"></div>
+      </div>
+
       <form #addPersonForm="ngForm" (submit)="next(addPersonForm.value)">
         <div class="form-group">
           <div>
@@ -48,7 +55,7 @@
             <label for="selectedRelated">Connecting to:</label>
             <span *ngIf="!selectedRelated" class="text-danger" style="float:right">Required!</span>
           </div>
-          <select required name="select" type="select" [(ngModel)]="selectedRelated" [compareWith]="compareById"V class="form-select">
+          <select required name="select" type="select" [(ngModel)]="selectedRelated" [compareWith]="compareById" V class="form-select">
             <option *ngFor="let person of personsItems" [ngValue]="person">{{person.Name}}</option>
           </select>
         </div>
@@ -75,14 +82,41 @@
       </form>
     </div>
   </div>
-  <div class="verify">
+
+  <!--class="verify-disabled"-->
+  <div [ngClass]="{'verify': !verifyDisabled, 'verify-disabled': verifyDisabled}">
     <h4 class="sectionHeader">VERIFY CONNECTIONS...</h4>
-    <hr />
-    <div style="width:300px">
+    <div class="divider"></div>
+    <div class="sectionContainer" style="height:90%">
+
+      <div *ngIf="spinnerVerify" class="loader-overlay">
+        <div class="spinner"></div>
+      </div>
+
+      <h4>Connections found:</h4>
+      <div class="found-conns">
+
+      </div>
+
+      <br />
+      <div class="divider"></div>
+
+      <h4>Undecided/Complex:</h4>
+      <div class="found-conns">
+
+      </div>
+
+      <br />
+      <div class="divider"></div>
+      <div class="form-group">
+        <input type="submit" value="Next" class="btn btn-primary nextBtn" />
+        <input type="button" value="Back" class="btn btn-primary" (click)="backTo('welcome')" />
+      </div>
 
     </div>
   </div>
-  <div class="complete">
+
+  <div class="complete-disabled">
     <h4 class="sectionHeader">COMPLETE ADDITION...</h4>
     <hr />
     <div style="width:300px">

@@ -113,14 +113,6 @@ export class CalculationsService {
     undecidedConns: IUndecidedConnection[]
   ): eRel | null {
 
-    if (this._personConn?.TargetPerson?.Id == 4 && this._personConn.RelatedPerson?.Id == 3) {
-      let test = '';
-    }
-
-    if (this._personConn?.TargetPerson?.Id == 3 && this._personConn.RelatedPerson?.Id == 4) {
-      let test = '';
-    }
-
     let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
@@ -147,6 +139,7 @@ export class CalculationsService {
       let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel?.val)!;
       if (possibleComplexRel) possibleComplex_debug.push(newConn);
       newConns.push(newConn);
+
       let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
       if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
     }
@@ -157,9 +150,22 @@ export class CalculationsService {
   }
 
   private conExists(person: IPerson, related: IPerson, relation: eRel, newConns: IConnection[]) {
-    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == eRel[relation]);
-    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id && c.Relationship?.Type == eRel[relation]);
+    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id); // && c.Relationship?.Type == eRel[relation]
+    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id); // && c.Relationship?.Type == eRel[relation]
     return existsInNew || existsInAll;
+  }
+
+  anyConExists(person: IPerson, related: IPerson) {
+
+    if (this._personConn?.TargetPerson?.Id == 4 && this._personConn.RelatedPerson?.Id == 3) {
+      let test = '';
+    }
+
+    if (this._personConn?.TargetPerson?.Id == 3 && this._personConn.RelatedPerson?.Id == 4) {
+      let test = '';
+    }
+
+    return this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id);
   }
 
   private farRelation(undecidedConns: IUndecidedConnection[]) {
