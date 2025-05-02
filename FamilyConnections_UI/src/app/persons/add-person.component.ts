@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { delay, timer } from 'rxjs';
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
+import { CalculationsService } from '../services/calculations.service';
 import { ConnectionsService } from '../services/connections.service';
 import { StaticDataService } from '../services/static-data.service';
 import { WaiterService } from '../services/waiter.service';
@@ -26,7 +27,12 @@ export class AddPersonComponent {
     eRel.Undecided
   );
   foundConns: IConnection[] = [];
-  undecidedComplexConns: IConnection[] = [];
+  undecidedConns: IConnection[] = [];
+  complexConns: IConnection[] = [];
+
+  inFoundTab: boolean = false;
+  inUndecidedTab: boolean = false;
+  inComplexTab: boolean = false;
 
   countries: INameToId[];
   genders: INameToId[];
@@ -101,6 +107,19 @@ export class AddPersonComponent {
     this.spinnerWelcome = false;
     this.welcomeDisabled = true;
     this.verifyDisabled = false;
+    this.inFoundTab = true;
+
+    //testing
+    let lastThreeIndex = newConnections.length - 4;
+    let lastThree = newConnections.slice(lastThreeIndex, lastThreeIndex + 3);
+    lastThree.forEach(c => {
+      c.Relationship!.PossibleComplexRel = eRel.StepFather;
+      c.Relationship!.Id = eRel.StepMother;
+      c.Relationship!.Type = eRel[eRel.StepMother];
+    });
+    //testing
+
+    //debugger;
 
     this.foundConns = newConnections.filter(c =>
       c.Relationship?.PossibleComplexRel == null &&
@@ -109,17 +128,41 @@ export class AddPersonComponent {
     );
     this.foundConns.forEach(c => c.Confirmed = true);
 
-    this.undecidedComplexConns = newConnections.filter(c =>
-      c.Relationship?.PossibleComplexRel != null ||
+    //debugger;
+
+    this.undecidedConns = newConnections.filter(c =>
+      c.Relationship?.PossibleComplexRel == null &&
       c.Relationship?.Id == eRel.Undecided ||
       c.Relationship?.Id == eRel.FarRel
+      );
+
+    this.complexConns = newConnections.filter(c =>
+      c.Relationship?.PossibleComplexRel != null
     );
+
+    //debugger;
 
     // handle step 3 UI -> summary
 
     // set persistency texts -> in last step completion
     //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
     //this.personsRepo.addConnections(newConnections);
+  }
+
+  goToTab(tab: string) {
+    if (tab == 'found' && !this.inFoundTab) {
+      this.inFoundTab = true;
+      this.inUndecidedTab = false;
+      this.inComplexTab = false;
+    } else if (tab == 'undecided' && !this.inUndecidedTab) {
+      this.inUndecidedTab = true;
+      this.inFoundTab = false;
+      this.inComplexTab = false;
+    } else if (tab == 'complex' && !this.inComplexTab) {
+      this.inComplexTab = true;
+      this.inUndecidedTab = false;
+      this.inFoundTab = false;
+    }
   }
 
   async backTo(section: string) {

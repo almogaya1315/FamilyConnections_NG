@@ -17,9 +17,51 @@ export class CalculationsService {
     this._relatedConn = relatedConn;
     this._conns = conns;
   }
-
   getConns() {
     return this._conns;
+  }
+  findRelation(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]
+  ): eRel | null {
+
+    let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSpouse(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkParentSibling(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSiblingChild(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSiblingInLaw(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.farRelation(undecidedConns);
+
+    let relName = eRel[relation];
+    return relation;
+  }
+  connectBetween(
+    person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
+    newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false,
+    createConnection: (person: IPerson, related: IPerson, relation: eRel, complexRel: eRel | null) => IConnection | null) {
+
+    //if (relation == eRel.FarRel || relation == eRel.Undecided) return;
+
+    if (opposite) {
+      relation = this.opposite(relation!, relatedPerson!.Gender);
+      if (possibleComplexRel != undefined && possibleComplexRel?.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
+    }
+
+    if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
+      let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel?.val)!;
+      if (possibleComplexRel.val) possibleComplex_debug.push(newConn);
+      newConns.push(newConn);
+      this._conns.push(newConn);
+
+      let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
+      if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
+    }
+
+    if (!opposite) {
+      this.connectBetween(relatedPerson!, person, relation, newConns, possibleComplexRel, possibleComplex_debug, opposite = true, createConnection);
+    }
   }
 
   opposite(relation: eRel, gender: eGender): eRel {
@@ -103,61 +145,12 @@ export class CalculationsService {
       case eRel.FarRel:
         oppositeRel = eRel.FarRel;
         break;
+      case eRel.Undecided:
+        oppositeRel = eRel.Undecided;
+        break;
     }
 
     return oppositeRel;
-  }
-
-  findRelation(
-    possibleComplexRel: { val: eRel | null },
-    undecidedConns: IUndecidedConnection[]
-  ): eRel | null {
-
-    if (this._personConn?.TargetPerson?.Id == 1 && this._relatedConn?.RelatedPerson?.Id == 5) {
-      let test = '';
-    }
-    if (this._personConn?.TargetPerson?.Id == 5 && this._relatedConn?.RelatedPerson?.Id == 1) {
-      let test = '';
-    }
-
-    let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkSpouse(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkParentSibling(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkSiblingChild(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.checkSiblingInLaw(possibleComplexRel, undecidedConns);
-    if (!relation) relation = this.farRelation(undecidedConns);
-
-    let relName = eRel[relation];
-    return relation;
-  }
-
-  connectBetween(
-    person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
-    newConns: IConnection[], possibleComplexRel: { val: eRel | null; }, possibleComplex_debug: IConnection[], opposite: boolean = false,
-    createConnection: (person: IPerson, related: IPerson, relation: eRel, complexRel: eRel | null) => IConnection | null) {
-
-    if (relation == eRel.FarRel || relation == eRel.Undecided) return;
-
-    if (opposite) {
-      relation = this.opposite(relation!, relatedPerson!.Gender);
-      if (possibleComplexRel != undefined && possibleComplexRel?.val != null) possibleComplexRel.val = this.opposite(possibleComplexRel.val!, relatedPerson!.Gender);
-    }
-
-    if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
-      let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel?.val)!;
-      if (possibleComplexRel.val) possibleComplex_debug.push(newConn);
-      newConns.push(newConn);
-      this._conns.push(newConn);
-
-      let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
-      if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
-    }
-
-    if (!opposite) {
-      this.connectBetween(relatedPerson!, person, relation, newConns, possibleComplexRel, possibleComplex_debug, opposite = true, createConnection);
-    }
   }
 
   private conExists(person: IPerson, related: IPerson, relation: eRel, newConns: IConnection[]) {
@@ -165,7 +158,6 @@ export class CalculationsService {
     let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id); // && c.Relationship?.Type == eRel[relation]
     return existsInNew || existsInAll;
   }
-
   anyConExists(person: IPerson, related: IPerson) {
     return this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id);
   }

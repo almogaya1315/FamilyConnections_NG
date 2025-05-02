@@ -80,7 +80,7 @@ export class ConnectionsService {
     this.cacheSvc.setCache(conns, eStorageKeys.AllLocalConnections, [eStorageType.Session]);
   }
 
-  private opposite(con: IConnection): IConnection {
+  opposite(con: IConnection): IConnection {
     let oppositeRel = this.calcSvc.opposite(con.Relationship!.Id as eRel, con.TargetPerson?.Gender!);
     return this.createConnection(con.RelatedPerson!, con.TargetPerson!, oppositeRel)!;
   }

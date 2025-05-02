@@ -63,8 +63,8 @@
   padding: 5px;
   position: relative;
   box-sizing: border-box;
-  height: 675px;
-  max-height: 675px;
+  height: 690px;
+  max-height: 690px;
 }
 
 .complete-disabled {
@@ -104,7 +104,7 @@
 .sectionContainer {
   width: 300px;
   justify-self: center;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   height: 100%;
   padding-right: 100px;
   margin-right: -100px;
@@ -115,11 +115,12 @@
   display: flex;
   flex-direction: column;
 }
-.verifyTop {
-  flex-grow: 1;
-  overflow-y: auto;
+.verify-middle {
+  flex: 1 1 auto;
+  overflow-y: scroll;
+  width: 105%;
 }
-.verifyBotton {
+.verify-bottom {
   margin-top: auto;
 }
 
@@ -134,7 +135,7 @@
   width: 100%;
   height: auto;
   max-height: 465px;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
   box-sizing: border-box;
 }
 
@@ -156,6 +157,15 @@
 .rel-input {
   margin-right: 5px
 }
+
+.tab-focus{
+    background-color: darkgray;
+    cursor: default;
+}
+.tab-not-focus {
+    background-color: transparent;
+}
+
 
 /*loader overlay spinner*/
 .loader-overlay {
