@@ -24,7 +24,8 @@ export class ConnectionsService {
         TargetId: person.Id as number,
         RelatedId: relatedPerson?.Id as number,
         RelationshipId: relation as number
-      }
+      },
+      Confirmed: false
     }
     return conn;
   }
@@ -67,10 +68,8 @@ export class ConnectionsService {
 
   calcConnections(newConnection: IConnection, persons: IPerson[]): IConnection[] {
     persons!.push(newConnection!.TargetPerson!)
-    var newConnections = this.checkAllConnections(persons!);
     newConnection.RelatedPerson = persons.find(p => p.Id == newConnection.RelatedPerson!.Id)!;
-    var oppositeCon = this.opposite(newConnection);
-    newConnections.push(newConnection, oppositeCon);
+    var newConnections = this.checkAllConnections(persons!, newConnection);
     return newConnections;
   }
 
@@ -82,19 +81,22 @@ export class ConnectionsService {
   }
 
   private opposite(con: IConnection): IConnection {
-    let oppositeRel = this.calcSvc.opposite(con.Relationship!.Id as eRel, con.RelatedPerson?.Gender!);
+    let oppositeRel = this.calcSvc.opposite(con.Relationship!.Id as eRel, con.TargetPerson?.Gender!);
     return this.createConnection(con.RelatedPerson!, con.TargetPerson!, oppositeRel)!;
   }
 
-  private checkAllConnections(persons: IPerson[]): IConnection[] {
+  private checkAllConnections(persons: IPerson[], newConn: IConnection): IConnection[] {
     let newConns: IConnection[] = [];
+
+    newConns.push(newConn);
+    var oppositeCon = this.opposite(newConn);
+    newConns.push(oppositeCon);
 
     let possibleComplex: IConnection[] = [];
     let undecidedConns: IUndecidedConnection[] = [];
 
     let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
     let conns = this.mapFlatConnections(flatConns, persons);
-
 
     // reverse to start with the new added person
     persons.reverse();
@@ -111,10 +113,12 @@ export class ConnectionsService {
           let relation: eRel | null;
           let personConn = personConns.find(pc => pc.RelatedPerson!.Id == relatedConn.TargetPerson!.Id);
           this.calcSvc.initCalculation(personConn!, relatedConn, conns);
-          if (!this.calcSvc.anyConExists(person, relatedConn.TargetPerson!)) {
+
+          if (!this.calcSvc.anyConExists(person, relatedConn.RelatedPerson!)) {
             //ComplexRel -> Step, InLaw, Great, Ex, Far
             let possibleComplexRel: { val: eRel | null } = { val: null };
             relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
+            var relName = eRel[relation!];
             this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
           }
         });
@@ -133,7 +137,8 @@ export class ConnectionsService {
       TargetPerson: persons.find(p => p.Id == f.TargetId)!,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId)!,
       Relationship: ConnectionsService.newRelationship(f.RelationshipId),
-      Flat: f
+      Flat: f,
+      Confirmed: false
     }));
     return flatMap;
   }
@@ -143,7 +148,8 @@ export class ConnectionsService {
       TargetPerson: person,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
       Relationship: ConnectionsService.newRelationship(f.RelationshipId),
-      Flat: f
+      Flat: f,
+      Confirmed: false
     }));
   }
 

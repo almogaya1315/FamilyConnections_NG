@@ -31,7 +31,8 @@ export interface IConnection {
   TargetPerson: IPerson | null,
   RelatedPerson: IPerson | null,
   Relationship: IRelationshipInfo | null,
-  Flat: IFlatConnection | null
+  Flat: IFlatConnection | null,
+  Confirmed: boolean
 }
 
 export interface IFlatConnection {

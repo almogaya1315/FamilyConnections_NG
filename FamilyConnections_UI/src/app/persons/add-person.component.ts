@@ -25,6 +25,8 @@ export class AddPersonComponent {
     this.personsRepo.getDefaultPerson(),
     eRel.Undecided
   );
+  foundConns: IConnection[] = [];
+  undecidedComplexConns: IConnection[] = [];
 
   countries: INameToId[];
   genders: INameToId[];
@@ -95,11 +97,23 @@ export class AddPersonComponent {
 
     await this.wait.seconds(2);
 
+    // handle step 2 UI -> verify founds and possible complexity
     this.spinnerWelcome = false;
     this.welcomeDisabled = true;
     this.verifyDisabled = false;
 
-    // handle step 2 UI -> possible complexity
+    this.foundConns = newConnections.filter(c =>
+      c.Relationship?.PossibleComplexRel == null &&
+      c.Relationship?.Id !== eRel.Undecided &&
+      c.Relationship?.Id !== eRel.FarRel
+    );
+    this.foundConns.forEach(c => c.Confirmed = true);
+
+    this.undecidedComplexConns = newConnections.filter(c =>
+      c.Relationship?.PossibleComplexRel != null ||
+      c.Relationship?.Id == eRel.Undecided ||
+      c.Relationship?.Id == eRel.FarRel
+    );
 
     // handle step 3 UI -> summary
 
@@ -125,11 +139,43 @@ export class AddPersonComponent {
   }
 
   fillTest() {
-    this.newConnection!.TargetPerson!.FullName = "Racheli Paz";
-    this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
+    this.newConnection!.TargetPerson!.FullName = "Bar Friedman";
+    this.newConnection!.TargetPerson!.DateOfBirth = new Date(1990, 1, 1);
     this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
     this.selectedGender = this.genders.find(g => g.Id === 1)!;
     this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
-    this.selectedRelation = this.relations.find(r => r.Id === 2)!;
+    this.selectedRelation = this.relations.find(r => r.Id === 10)!; //Cousin
+
+    //this.newConnection!.TargetPerson!.FullName = "Emilia Elbaz";
+    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(2018, 1, 1);
+    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    //this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    //this.selectedRelation = this.relations.find(r => r.Id === 8)!; //Aunt
+
+    //this.newConnection!.TargetPerson!.FullName = "Henya Weintrob";
+    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(1949, 10, 20);
+    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    //this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    //this.selectedRelation = this.relations.find(r => r.Id === 4)!; //Daughter
+
+    //this.newConnection!.TargetPerson!.FullName = "Amit Elbaz";
+    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(1986, 11, 30);
+    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    //this.selectedGender = this.genders.find(g => g.Id === 0)!;
+    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    //this.selectedRelation = this.relations.find(r => r.Id === 18)!; //SisterInLaw
+    ////this.selectedRelated = this.personsItems.find(p => p.Id === 3)!;
+    ////this.selectedRelation = this.relations.find(r => r.Id === 11)!; //Niece
+    ////this.selectedRelated = this.personsItems.find(p => p.Id === 1)!;
+    ////this.selectedRelation = this.relations.find(r => r.Id === 19)!; //BrotherInLaw
+
+    //this.newConnection!.TargetPerson!.FullName = "Racheli Paz";
+    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
+    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    //this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    //this.selectedRelation = this.relations.find(r => r.Id === 2)!; //Sister
   }
 }

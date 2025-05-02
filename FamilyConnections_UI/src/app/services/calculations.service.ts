@@ -113,13 +113,23 @@ export class CalculationsService {
     undecidedConns: IUndecidedConnection[]
   ): eRel | null {
 
+    if (this._personConn?.TargetPerson?.Id == 1 && this._relatedConn?.RelatedPerson?.Id == 5) {
+      let test = '';
+    }
+    if (this._personConn?.TargetPerson?.Id == 5 && this._relatedConn?.RelatedPerson?.Id == 1) {
+      let test = '';
+    }
+
     let relation: eRel | null = this.checkParent(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkChild(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkSibling(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkSpouse(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkParentSibling(possibleComplexRel, undecidedConns);
+    if (!relation) relation = this.checkSiblingChild(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.checkSiblingInLaw(possibleComplexRel, undecidedConns);
     if (!relation) relation = this.farRelation(undecidedConns);
+
+    let relName = eRel[relation];
     return relation;
   }
 
@@ -137,8 +147,9 @@ export class CalculationsService {
 
     if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
       let newConn: IConnection = createConnection(person, relatedPerson!, relation!, possibleComplexRel?.val)!;
-      if (possibleComplexRel) possibleComplex_debug.push(newConn);
+      if (possibleComplexRel.val) possibleComplex_debug.push(newConn);
       newConns.push(newConn);
+      this._conns.push(newConn);
 
       let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
       if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
@@ -156,15 +167,6 @@ export class CalculationsService {
   }
 
   anyConExists(person: IPerson, related: IPerson) {
-
-    if (this._personConn?.TargetPerson?.Id == 4 && this._personConn.RelatedPerson?.Id == 3) {
-      let test = '';
-    }
-
-    if (this._personConn?.TargetPerson?.Id == 3 && this._personConn.RelatedPerson?.Id == 4) {
-      let test = '';
-    }
-
     return this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id);
   }
 
@@ -350,7 +352,10 @@ export class CalculationsService {
         possibleComplexRel.val = this.isStepChild();
       }
       //HasSibling
-      else if (this.hasSibling(this._relatedConn!)) {
+      //HasSiblingInLaw
+      else if (
+        this.hasSibling(this._relatedConn!) ||
+        this.hasSiblingInLaw(this._relatedConn!)) {
         //IsSiblingInLaw
         relation = this.isSiblingInLaw();
       }
@@ -358,6 +363,25 @@ export class CalculationsService {
         //FarRelation
         relation = this.farRelation(undecidedConns);
       }
+    }
+
+    return relation;
+  }
+  private checkSiblingChild(
+    possibleComplexRel: { val: eRel | null },
+    undecidedConns: IUndecidedConnection[]) {
+    let relation: eRel | null = null;
+
+    //person's SiblingChild
+    if (this.hasSiblingChild(this._personConn!)) {
+      //HasParent
+      if (this.hasParent(this._relatedConn!)) {
+        //IsSiblingInLaw
+        relation = this.isSiblingInLaw();
+      }
+
+      //IsParentSibling
+      //relation = this.isParentSibling();
     }
 
     return relation;
@@ -412,6 +436,9 @@ export class CalculationsService {
     undecidedConns: IUndecidedConnection[]) {
     let relation: eRel | null = null;
 
+    //FarRelation
+    relation = this.farRelation(undecidedConns);
+
     //person's SiblingInLaw
     if (this.hasSiblingInLaw(this._personConn!)) {
       //HasParentSibling
@@ -419,10 +446,16 @@ export class CalculationsService {
         //IsParentSibling
         relation = this.isParentSibling();
       }
-    }
-    else {
-      //FarRelation
-      relation = this.farRelation(undecidedConns);
+      //HasSpouse
+      else if (this.hasSpouse(this._relatedConn!)) {
+        //IsSiblingInLaw
+        relation = this.isSiblingInLaw();
+      }
+      //HasChild
+      else if (this.hasChild(this._relatedConn!)) {
+        //IsParentSibling
+        relation = this.isSiblingChild();
+      }
     }
 
     return relation;
