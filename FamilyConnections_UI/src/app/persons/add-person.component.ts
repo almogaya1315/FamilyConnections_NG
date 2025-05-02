@@ -6,7 +6,7 @@ import { ConnectionsService } from '../services/connections.service';
 import { StaticDataService } from '../services/static-data.service';
 import { WaiterService } from '../services/waiter.service';
 import { INameToId } from '../shared/common.model';
-import { eGender, eRel, IConnection, IFlatConnection, IPerson, IUndecidedConnection } from './person.model';
+import { eGender, eRel, IConnection, IFlatConnection, IPerson } from './person.model';
 import { PersonsRepositoryService } from './persons-repository.service';
 
 @Component({
@@ -28,11 +28,9 @@ export class AddPersonComponent {
   );
   foundConns: IConnection[] = [];
   undecidedConns: IConnection[] = [];
-  complexConns: IConnection[] = [];
 
   inFoundTab: boolean = false;
   inUndecidedTab: boolean = false;
-  inComplexTab: boolean = false;
 
   countries: INameToId[];
   genders: INameToId[];
@@ -97,7 +95,7 @@ export class AddPersonComponent {
     this.newConnection = this.connsSvc.fillNewConnection(this.newConnection!, this.persons!, this.inputs());
 
     // calc other connections
-    let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!);
+    let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!, this.undecidedConns);
 
     this.connsSvc.setLocalCache(this.persons!, newConnections); // between steps
 
@@ -109,36 +107,25 @@ export class AddPersonComponent {
     this.verifyDisabled = false;
     this.inFoundTab = true;
 
-    //testing
-    let lastThreeIndex = newConnections.length - 4;
-    let lastThree = newConnections.slice(lastThreeIndex, lastThreeIndex + 3);
-    lastThree.forEach(c => {
-      c.Relationship!.PossibleComplexRel = eRel.StepFather;
-      c.Relationship!.Id = eRel.StepMother;
-      c.Relationship!.Type = eRel[eRel.StepMother];
-    });
-    //testing
-
     //debugger;
 
     this.foundConns = newConnections.filter(c =>
-      c.Relationship?.PossibleComplexRel == null &&
       c.Relationship?.Id !== eRel.Undecided &&
       c.Relationship?.Id !== eRel.FarRel
     );
     this.foundConns.forEach(c => c.Confirmed = true);
 
-    //debugger;
+    //testing
+    let lastThreeIndex = this.undecidedConns.length - 4;
+    let lastThree = this.undecidedConns.slice(lastThreeIndex, lastThreeIndex + 3);
+    lastThree.forEach(c => {
+      c.Relationship!.Id = eRel.Undecided;
+      c.Relationship!.Type = eRel[eRel.Undecided];
+      c.UndecidedOptions = [{ Id: eRel.StepMother, Name: eRel[eRel.StepMother] }, { Id: eRel.StepFather, Name: eRel[eRel.StepFather] }]
+    });
+    //testing
 
-    this.undecidedConns = newConnections.filter(c =>
-      c.Relationship?.PossibleComplexRel == null &&
-      c.Relationship?.Id == eRel.Undecided ||
-      c.Relationship?.Id == eRel.FarRel
-      );
-
-    this.complexConns = newConnections.filter(c =>
-      c.Relationship?.PossibleComplexRel != null
-    );
+    this.undecidedConns = this.undecidedConns.filter(c => c.Relationship?.Id != eRel.FarRel);
 
     //debugger;
 
@@ -153,16 +140,10 @@ export class AddPersonComponent {
     if (tab == 'found' && !this.inFoundTab) {
       this.inFoundTab = true;
       this.inUndecidedTab = false;
-      this.inComplexTab = false;
     } else if (tab == 'undecided' && !this.inUndecidedTab) {
       this.inUndecidedTab = true;
       this.inFoundTab = false;
-      this.inComplexTab = false;
-    } else if (tab == 'complex' && !this.inComplexTab) {
-      this.inComplexTab = true;
-      this.inUndecidedTab = false;
-      this.inFoundTab = false;
-    }
+    } 
   }
 
   async backTo(section: string) {

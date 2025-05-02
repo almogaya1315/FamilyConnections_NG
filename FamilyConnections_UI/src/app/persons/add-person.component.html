@@ -103,10 +103,6 @@
                 type="button" style="border: none" *ngIf="undecidedConns.length > 0" (click)="goToTab('undecided')">
           Undecided
         </button>
-        <button [ngClass]="{'tab-focus': inComplexTab, 'tab-not-focus': !inComplexTab}"
-                type="button" style="border: none" *ngIf="complexConns.length > 0" (click)="goToTab('complex')">
-          Complex
-        </button>
         <div class="divider"></div>
       </div>
 
@@ -141,26 +137,10 @@
                   {{ con!.TargetPerson!.FullName! }}'s
                 </span>
                 <div class="rel-checkbox">
-                  <span>{{ con!.Relationship!.Type! }}</span>
-                  <input type="checkbox" [checked]="con.Confirmed" class="rel-input" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="complex-tab" *ngIf="inComplexTab">
-          <div class="found-conns">
-            <div *ngFor="let con of complexConns" class="found-conn">
-              <div class="conn-label">
-                <span style="display:block">
-                  {{ con!.RelatedPerson!.FullName! }} is
-                </span>
-                <span style="display:block">
-                  {{ con!.TargetPerson!.FullName! }}'s
-                </span>
-                <div class="rel-checkbox">
-                  <span>{{ con!.Relationship!.Type! }}</span>
+                  <select required name="select" type="select" [(ngModel)]="con!.SelectedUndecided" class="rel-select">
+                    <option [ngValue]="-1" disabled selected>DECIDE</option>
+                    <option *ngFor="let option of con!.UndecidedOptions" [ngValue]="option.Id">{{option.Name}}</option>
+                  </select>
                   <input type="checkbox" [checked]="con.Confirmed" class="rel-input" />
                 </div>
               </div>

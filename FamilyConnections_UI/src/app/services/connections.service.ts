@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { eGender, eRel, IConnection, IFlatConnection, IPerson, IRelationshipInfo, IUndecidedConnection } from '../persons/person.model';
+import { eGender, eRel, IConnection, IFlatConnection, IPerson, IRelationshipInfo } from '../persons/person.model';
 import { PersonsRepositoryService } from '../persons/persons-repository.service';
 import { CacheService, eStorageKeys, eStorageType } from './cache.service';
 import { CalculationsService } from './calculations.service';
@@ -14,8 +14,9 @@ export class ConnectionsService {
     private calcSvc: CalculationsService,
     private cacheSvc: CacheService) { }
 
-  createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, possibleComplex: eRel | null = null): IConnection | null {
+  createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel): IConnection | null {
     let newRel = ConnectionsService.newRelationship(relation as number);
+    let relStr = '';
     let conn = {
       TargetPerson: person,
       RelatedPerson: relatedPerson,
@@ -25,7 +26,10 @@ export class ConnectionsService {
         RelatedId: relatedPerson?.Id as number,
         RelationshipId: relation as number
       },
-      Confirmed: false
+      Confirmed: false,
+      RelationStr: relStr,
+      UndecidedOptions: [],
+      SelectedUndecided: null
     }
     return conn;
   }
@@ -66,10 +70,10 @@ export class ConnectionsService {
     return newConnection;
   }
 
-  calcConnections(newConnection: IConnection, persons: IPerson[]): IConnection[] {
+  calcConnections(newConnection: IConnection, persons: IPerson[], undecidedConns: IConnection[]): IConnection[] {
     persons!.push(newConnection!.TargetPerson!)
     newConnection.RelatedPerson = persons.find(p => p.Id == newConnection.RelatedPerson!.Id)!;
-    var newConnections = this.checkAllConnections(persons!, newConnection);
+    var newConnections = this.checkAllConnections(persons!, newConnection, undecidedConns);
     return newConnections;
   }
 
@@ -85,15 +89,12 @@ export class ConnectionsService {
     return this.createConnection(con.RelatedPerson!, con.TargetPerson!, oppositeRel)!;
   }
 
-  private checkAllConnections(persons: IPerson[], newConn: IConnection): IConnection[] {
-    let newConns: IConnection[] = [];
+  private checkAllConnections(persons: IPerson[], newConn: IConnection, undecidedConns: IConnection[]): IConnection[] {
 
+    let newConns: IConnection[] = [];
     newConns.push(newConn);
     var oppositeCon = this.opposite(newConn);
     newConns.push(oppositeCon);
-
-    let possibleComplex: IConnection[] = [];
-    let undecidedConns: IUndecidedConnection[] = [];
 
     let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
     let conns = this.mapFlatConnections(flatConns, persons);
@@ -115,11 +116,10 @@ export class ConnectionsService {
           this.calcSvc.initCalculation(personConn!, relatedConn, conns);
 
           if (!this.calcSvc.anyConExists(person, relatedConn.RelatedPerson!)) {
-            //ComplexRel -> Step, InLaw, Great, Ex, Far
-            let possibleComplexRel: { val: eRel | null } = { val: null };
-            relation = this.calcSvc.findRelation(possibleComplexRel!, undecidedConns);
+            //UndecidedRel -> Step, InLaw, Great, Ex, Far
+            relation = this.calcSvc.findRelation(undecidedConns);
             var relName = eRel[relation!];
-            this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, possibleComplexRel!, possibleComplex, false, this.createConnection);
+            this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, false, this.createConnection);
           }
         });
 
@@ -128,7 +128,6 @@ export class ConnectionsService {
       }
     });
 
-    //return newConns.map(c => c.Flat!);
     return newConns;
   }
 
@@ -138,7 +137,10 @@ export class ConnectionsService {
       RelatedPerson: persons.find(p => p.Id == f.RelatedId)!,
       Relationship: ConnectionsService.newRelationship(f.RelationshipId),
       Flat: f,
-      Confirmed: false
+      Confirmed: false,
+      RelationStr: '',
+      UndecidedOptions: [],
+      SelectedUndecided: null
     }));
     return flatMap;
   }
@@ -149,19 +151,21 @@ export class ConnectionsService {
       RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
       Relationship: ConnectionsService.newRelationship(f.RelationshipId),
       Flat: f,
-      Confirmed: false
+      Confirmed: false,
+      RelationStr: '',
+      UndecidedOptions: [],
+      SelectedUndecided: null
     }));
   }
 
-  newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo | null {
-    return ConnectionsService.newRelationship(relationshipId, possibleComplexRel);
+  newRelationship(relationshipId: number): IRelationshipInfo | null {
+    return ConnectionsService.newRelationship(relationshipId);
   }
 
-  private static newRelationship(relationshipId: number, possibleComplexRel: eRel | null = null): IRelationshipInfo | null {
-    let rel = {
+  private static newRelationship(relationshipId: number): IRelationshipInfo | null {
+    let rel: IRelationshipInfo = {
       Id: relationshipId ?? -1,
-      Type: eRel[relationshipId],
-      PossibleComplexRel: possibleComplexRel
+      Type: eRel[relationshipId]
     }
     return rel;
   }
