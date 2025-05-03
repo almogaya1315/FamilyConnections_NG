@@ -125,7 +125,7 @@ export class AddPersonComponent {
     //});
     //testing
 
-    this.undecidedConns = this.undecidedConns.filter(c => c.Relationship?.Id != eRel.FarRel);
+    //this.undecidedConns = this.undecidedConns.filter(c => c.Relationship?.Id != eRel.FarRel);
 
     //debugger;
 

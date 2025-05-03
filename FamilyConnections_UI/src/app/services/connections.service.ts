@@ -113,11 +113,11 @@ export class ConnectionsService {
         relatedConns.forEach(relatedConn => {
           let relation: eRel | null;
           let personConn = personConns.find(pc => pc.RelatedPerson!.Id == relatedConn.TargetPerson!.Id);
-          this.calcSvc.initCalculation(personConn!, relatedConn, conns);
+          this.calcSvc.initCalculation(personConn!, relatedConn, conns, undecidedConns);
 
           if (!this.calcSvc.anyConExists(person, relatedConn.RelatedPerson!)) {
             //UndecidedRel -> Step, InLaw, Great, Ex, Far
-            relation = this.calcSvc.findRelation(undecidedConns);
+            relation = this.calcSvc.findRelation();
             var relName = eRel[relation!];
             this.calcSvc.connectBetween(person, relatedConn.RelatedPerson, relation, newConns!, false, this.createConnection);
           }

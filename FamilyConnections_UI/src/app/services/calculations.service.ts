@@ -9,30 +9,29 @@ export class CalculationsService {
   private _personConn: IConnection | null = null;
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
+  private _undecidedConns: IConnection[] = [];
 
   constructor() { }
 
   // operation Methods
-  initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[]) {
+  initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[], unDecs: IConnection[]) {
     this._personConn = personConn;
     this._relatedConn = relatedConn;
     this._conns = conns;
+    this._undecidedConns = unDecs;
   }
   getConns() {
     return this._conns;
   }
-  findRelation(
-    undecidedConns: IConnection[]
-  ): eRel | null {
-
-    let relation: eRel | null = this.checkParent(undecidedConns);
-    if (!relation) relation = this.checkChild(undecidedConns);
-    if (!relation) relation = this.checkSibling(undecidedConns);
-    if (!relation) relation = this.checkSpouse(undecidedConns);
-    if (!relation) relation = this.checkParentSibling(undecidedConns);
-    if (!relation) relation = this.checkSiblingChild(undecidedConns);
-    if (!relation) relation = this.checkSiblingInLaw(undecidedConns);
-    if (!relation) relation = this.farRelation(undecidedConns);
+  findRelation(): eRel | null {
+    let relation: eRel | null = this.checkParent();
+    if (!relation) relation = this.checkChild();
+    if (!relation) relation = this.checkSibling();
+    if (!relation) relation = this.checkSpouse();
+    if (!relation) relation = this.checkParentSibling();
+    if (!relation) relation = this.checkSiblingChild();
+    if (!relation) relation = this.checkSiblingInLaw();
+    if (!relation) relation = this.farRelation();
 
     let relName = eRel[relation];
     return relation;
@@ -53,6 +52,14 @@ export class CalculationsService {
 
       let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
       if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
+
+      this._undecidedConns = this._undecidedConns.filter(
+        undec =>
+          !(undec.TargetPerson?.Id === newConn.TargetPerson?.Id &&
+            undec.RelatedPerson?.Id === newConn.RelatedPerson?.Id)
+      );
+
+      debugger;
     }
 
     if (!opposite) {
@@ -159,28 +166,35 @@ export class CalculationsService {
   }
 
   private createConnection(relation: eRel, options: INameToId[] = []) {
-    let conn = {
-      TargetPerson: this._personConn?.TargetPerson!,
-      RelatedPerson: this._relatedConn!.RelatedPerson,
-      Flat: {
-        TargetId: this._personConn?.TargetPerson!.Id as number,
-        RelatedId: this._relatedConn?.RelatedPerson!.Id as number,
-        RelationshipId: relation
-      },
-      Relationship: {
-        Id: relation,
-        Type: eRel[relation]
-      },
-      Confirmed: false,
-      RelationStr: this.relationStr(relation),
-      UndecidedOptions: options,
-      SelectedUndecided: { Id: -1, Name: '' }
-    };
+    let conn = null;
+    let exists = this._undecidedConns.some(c =>
+      c.TargetPerson!.Id == this._personConn?.TargetPerson!.Id &&
+      c.RelatedPerson!.Id == this._relatedConn!.RelatedPerson!.Id);
+    if (!exists) {
+      conn = {
+        TargetPerson: this._personConn?.TargetPerson!,
+        RelatedPerson: this._relatedConn!.RelatedPerson,
+        Flat: {
+          TargetId: this._personConn?.TargetPerson!.Id as number,
+          RelatedId: this._relatedConn?.RelatedPerson!.Id as number,
+          RelationshipId: relation
+        },
+        Relationship: {
+          Id: relation,
+          Type: eRel[relation]
+        },
+        Confirmed: false,
+        RelationStr: this.relationStr(relation),
+        UndecidedOptions: options,
+        SelectedUndecided: { Id: -1, Name: '' }
+      };
+    }
     return conn;
   }
-  private farRelation(undecidedConns: IConnection[]) {
+  private farRelation() {
     let relation = eRel.FarRel;
-    undecidedConns.push(this.createConnection(relation));
+    let newUndec = this.createConnection(relation); //the creation process checks the existence of the proposed conn to be created.
+    if (newUndec != null) this._undecidedConns.push(newUndec);
     return relation;
   }
 
@@ -191,15 +205,14 @@ export class CalculationsService {
       `Has a ${this._relatedConn!.Relationship!.Type}, ` +
       `So ${this._relatedConn!.RelatedPerson!.FullName} is ${this._personConn!.TargetPerson!.FullName}'s ${eRel[relation]}`;
   }
-  private undecidedRelation(relation1: eRel, relation2: eRel, undecidedConns: IConnection[]) {
+  private undecidedRelation(relation1: eRel, relation2: eRel) {
     let undecidedRelation = this.createConnection(eRel.Undecided, [{ Id: relation1, Name: eRel[relation1] }, { Id: relation2, Name: eRel[relation2] }]);
-    undecidedConns.push(undecidedRelation);
+    if (undecidedRelation != null) this._undecidedConns.push(undecidedRelation);
     return eRel.Undecided;
   }
 
   // relation Checkers
-  private checkParent(
-    undecidedConns: IConnection[]) {
+  private checkParent() {
     let relation: eRel | null = null;
 
     //person's Parent
@@ -224,14 +237,13 @@ export class CalculationsService {
         //Parent OR StepParent -> Undecided
         let relation1 = this.isParent();
         let relation2 = this.isStepParent();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
     }
 
     return relation;
   }
-  private checkChild(
-    undecidedConns: IConnection[]) {
+  private checkChild() {
     let relation: eRel | null = null;
 
     //person's Child
@@ -241,7 +253,7 @@ export class CalculationsService {
         //Spouse OR ExPartner -> Undecided
         let relation1 = this.isSpouse();
         let relation2 = eRel.ExPartner;
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
       //HasChild
       else if (this.hasChild(this._relatedConn!)) {
@@ -253,7 +265,7 @@ export class CalculationsService {
         //Child OR StepChild -> Undecided
         let relation1 = this.isChild();
         let relation2 = this.isStepChild();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
       //HasSpouse
       else if (this.hasSpouse(this._relatedConn!)) {
@@ -264,8 +276,7 @@ export class CalculationsService {
 
     return relation;
   }
-  private checkSibling(
-    undecidedConns: IConnection[]) {
+  private checkSibling() {
     let relation: eRel | null = null;
 
     //person's Sibling
@@ -275,7 +286,7 @@ export class CalculationsService {
         //Parent OR StepParent -> Undecided
         let relation1 = this.isParent();
         let relation2 = this.isStepParent();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
       //HasChild
       else if (this.hasChild(this._relatedConn!)) {
@@ -287,7 +298,7 @@ export class CalculationsService {
         //Sibling OR StepSibling -> Undecided
         let relation1 = this.isSibling();
         let relation2 = this.isStepSibling();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
       //HasSpouse
       else if (this.hasSpouse(this._relatedConn!)) {
@@ -313,8 +324,7 @@ export class CalculationsService {
 
     return relation;
   }
-  private checkSpouse(
-    undecidedConns: IConnection[]) {
+  private checkSpouse() {
     let relation: eRel | null = null;
 
     //person's Spouse
@@ -329,7 +339,7 @@ export class CalculationsService {
         //Child OR StepChild -> Undecided
         let relation1 = this.isChild();
         let relation2 = this.isStepChild();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
       //HasSibling
       //HasSiblingInLaw
@@ -343,8 +353,7 @@ export class CalculationsService {
 
     return relation;
   }
-  private checkSiblingChild(
-    undecidedConns: IConnection[]) {
+  private checkSiblingChild() {
     let relation: eRel | null = null;
 
     //person's SiblingChild
@@ -358,8 +367,7 @@ export class CalculationsService {
 
     return relation;
   }
-  private checkParentSibling(
-    undecidedConns: IConnection[]) {
+  private checkParentSibling() {
     let relation: eRel | null = null;
 
     //person's ParentSibling
@@ -394,18 +402,17 @@ export class CalculationsService {
         //ParentSibling OR Parent -> Undecided
         let relation1 = this.isParentSibling();
         let relation2 = this.isParent();
-        relation = this.undecidedRelation(relation1, relation2, undecidedConns);
+        relation = this.undecidedRelation(relation1, relation2);
       }
     }
 
     return relation;
   }
-  private checkSiblingInLaw(
-    undecidedConns: IConnection[]) {
+  private checkSiblingInLaw() {
     let relation: eRel | null = null;
 
     //FarRelation
-    relation = this.farRelation(undecidedConns);
+    relation = this.farRelation();
 
     //person's SiblingInLaw
     if (this.hasSiblingInLaw(this._personConn!)) {
