@@ -116,13 +116,13 @@ export class AddPersonComponent {
     this.foundConns.forEach(c => c.Confirmed = true);
 
     //testing
-    let lastThreeIndex = this.undecidedConns.length - 4;
-    let lastThree = this.undecidedConns.slice(lastThreeIndex, lastThreeIndex + 3);
-    lastThree.forEach(c => {
-      c.Relationship!.Id = eRel.Undecided;
-      c.Relationship!.Type = eRel[eRel.Undecided];
-      c.UndecidedOptions = [{ Id: eRel.StepMother, Name: eRel[eRel.StepMother] }, { Id: eRel.StepFather, Name: eRel[eRel.StepFather] }]
-    });
+    //let lastThreeIndex = this.undecidedConns.length - 4;
+    //let lastThree = this.undecidedConns.slice(lastThreeIndex, lastThreeIndex + 3);
+    //lastThree.forEach(c => {
+    //  c.Relationship!.Id = eRel.Undecided;
+    //  c.Relationship!.Type = eRel[eRel.Undecided];
+    //  c.UndecidedOptions = [{ Id: eRel.StepMother, Name: eRel[eRel.StepMother] }, { Id: eRel.StepFather, Name: eRel[eRel.StepFather] }]
+    //});
     //testing
 
     this.undecidedConns = this.undecidedConns.filter(c => c.Relationship?.Id != eRel.FarRel);
@@ -152,6 +152,14 @@ export class AddPersonComponent {
     } else { // if (section == 'verify') {
 
     } 
+  }
+
+  allUndecidedSelected(): boolean {
+    return this.undecidedConns.every(c => c.SelectedUndecided?.Id !== -1);
+  }
+
+  async final(credentials: any) {
+
   }
 
   private async backToWelcome() {

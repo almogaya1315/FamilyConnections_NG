@@ -174,7 +174,7 @@ export class CalculationsService {
       Confirmed: false,
       RelationStr: this.relationStr(relation),
       UndecidedOptions: options,
-      SelectedUndecided: -1
+      SelectedUndecided: { Id: -1, Name: '' }
     };
     return conn;
   }

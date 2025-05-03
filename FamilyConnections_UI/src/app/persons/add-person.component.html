@@ -106,57 +106,60 @@
         <div class="divider"></div>
       </div>
 
-      <div class="verify-middle">
-        <div *ngIf="inFoundTab" class="found-tab">
-          <div class="found-conns">
-            <div *ngFor="let con of foundConns" class="found-conn">
-              <div class="conn-label">
-                <span style="display:block">
-                  {{ con!.RelatedPerson!.FullName! }} is
-                </span>
-                <span style="display:block">
-                  {{ con!.TargetPerson!.FullName! }}'s
-                </span>
-                <div class="rel-checkbox">
-                  <span>{{ con!.Relationship!.Type! }}</span>
-                  <input type="checkbox" [checked]="con.Confirmed" class="rel-input" />
+      <form class="verify-form" #verifyConnsForm="ngForm" (submit)="final(verifyConnsForm.value)">
+        <div class="verify-middle">
+          <div *ngIf="inFoundTab" class="found-tab">
+            <div class="found-conns">
+              <div *ngFor="let con of foundConns" class="found-conn">
+                <div class="conn-label">
+                  <span style="display:block">
+                    {{ con!.RelatedPerson!.FullName! }} is
+                  </span>
+                  <span style="display:block">
+                    {{ con!.TargetPerson!.FullName! }}'s
+                  </span>
+                  <div class="rel-input">
+                    <span>{{ con!.Relationship!.Type! }}</span>
+                    <input type="checkbox" [checked]="con.Confirmed" class="rel-checkbox" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="undecided-tab" *ngIf="inUndecidedTab">
+            <div class="found-conns">
+              <div *ngFor="let con of undecidedConns" class="found-conn">
+                <div class="conn-label">
+                  <span style="display:block">
+                    {{ con!.RelatedPerson!.FullName! }} is
+                  </span>
+                  <span style="display:block">
+                    {{ con!.TargetPerson!.FullName! }}'s
+                  </span>
+                  <div class="rel-input">
+                    <select required name="select" type="select" [(ngModel)]="con!.SelectedUndecided!.Id" class="rel-select">
+                      <option [ngValue]="-1">DECIDE</option> <!--disabled selected-->
+                      <option *ngFor="let option of con!.UndecidedOptions" [ngValue]="option.Id">{{option.Name}}</option>
+                    </select>
+                    <input type="checkbox" [checked]="con.SelectedUndecided!.Id !== -1" class="rel-checkbox" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="undecided-tab" *ngIf="inUndecidedTab">
-          <div class="found-conns">
-            <div *ngFor="let con of undecidedConns" class="found-conn">
-              <div class="conn-label">
-                <span style="display:block">
-                  {{ con!.RelatedPerson!.FullName! }} is
-                </span>
-                <span style="display:block">
-                  {{ con!.TargetPerson!.FullName! }}'s
-                </span>
-                <div class="rel-checkbox">
-                  <select required name="select" type="select" [(ngModel)]="con!.SelectedUndecided" class="rel-select">
-                    <option [ngValue]="-1" disabled selected>DECIDE</option>
-                    <option *ngFor="let option of con!.UndecidedOptions" [ngValue]="option.Id">{{option.Name}}</option>
-                  </select>
-                  <input type="checkbox" [checked]="con.Confirmed" class="rel-input" />
-                </div>
-              </div>
-            </div>
+        <div class="verify-bottom">
+          <br />
+          <div class="divider"></div>
+          <div class="form-group">
+            <input type="submit" value="Next" class="btn btn-primary nextBtn"
+                   [disabled]="!allUndecidedSelected()" />
+            <input type="button" value="Back" class="btn btn-primary" (click)="backTo('welcome')" />
           </div>
         </div>
-      </div>
-
-      <div class="verify-bottom">
-        <br />
-        <div class="divider"></div>
-        <div class="form-group">
-          <input type="submit" value="Next" class="btn btn-primary nextBtn" />
-          <input type="button" value="Back" class="btn btn-primary" (click)="backTo('welcome')" />
-        </div>
-      </div>
+      </form>
 
     </div>
   </div>

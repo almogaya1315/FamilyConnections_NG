@@ -37,7 +37,7 @@ export interface IConnection {
   Confirmed: boolean,
   RelationStr: string,
   UndecidedOptions: INameToId[],
-  SelectedUndecided: eRel | null
+  SelectedUndecided: INameToId | null
 }
 
 export interface IFlatConnection {
