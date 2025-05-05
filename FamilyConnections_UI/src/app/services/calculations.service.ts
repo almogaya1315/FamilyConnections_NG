@@ -9,15 +9,17 @@ export class CalculationsService {
   private _personConn: IConnection | null = null;
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
+  private _newConns: IConnection[] = [];
   private _undecidedConns: IConnection[] = [];
 
   constructor() { }
 
   // operation Methods
-  initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[], unDecs: IConnection[]) {
+  initCalculation(personConn: IConnection, relatedConn: IConnection, conns: IConnection[], newConns: IConnection[], unDecs: IConnection[]) {
     this._personConn = personConn;
     this._relatedConn = relatedConn;
     this._conns = conns;
+    this._newConns = newConns;
     this._undecidedConns = unDecs;
   }
   getConns() {
@@ -37,33 +39,24 @@ export class CalculationsService {
     return relation;
   }
   connectBetween(
-    person: IPerson, relatedPerson: IPerson | null, relation: eRel | null,
-    newConns: IConnection[], opposite: boolean = false,
+    person: IPerson, relatedPerson: IPerson | null, relation: eRel | null, opposite: boolean = false,
     createConnection: (person: IPerson, related: IPerson, relation: eRel) => IConnection | null) {
 
     if (opposite) {
       relation = this.opposite(relation!, relatedPerson!.Gender);
     }
 
-    if (!this.conExists(person, relatedPerson!, relation!, newConns)) {
+    if (!this.anyConnExists(person, relatedPerson!)) {
       let newConn: IConnection = createConnection(person, relatedPerson!, relation!)!;
-      newConns.push(newConn);
+      this._newConns.push(newConn);
       this._conns.push(newConn);
 
       let existsInFlat = person.FlatConnections.some(f => f.TargetId == person.Id && f.RelatedId == relatedPerson?.Id);
       if (!existsInFlat) person.FlatConnections.push(newConn.Flat!);
-
-      this._undecidedConns = this._undecidedConns.filter(
-        undec =>
-          !(undec.TargetPerson?.Id === newConn.TargetPerson?.Id &&
-            undec.RelatedPerson?.Id === newConn.RelatedPerson?.Id)
-      );
-
-      debugger;
     }
 
     if (!opposite) {
-      this.connectBetween(relatedPerson!, person, relation, newConns, opposite = true, createConnection);
+      this.connectBetween(relatedPerson!, person, relation, opposite = true, createConnection);
     }
   }
 
@@ -156,12 +149,17 @@ export class CalculationsService {
     return oppositeRel;
   }
 
-  private conExists(person: IPerson, related: IPerson, relation: eRel, newConns: IConnection[]) {
-    let existsInNew = newConns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id); // && c.Relationship?.Type == eRel[relation]
-    let existsInAll = this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id); // && c.Relationship?.Type == eRel[relation]
+  private newConnExists(person: IPerson, related: IPerson) {
+    return this._newConns.some(c =>
+      c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id ||
+      c.RelatedPerson?.Id == person.Id && c.TargetPerson?.Id == related.Id);
+  }
+  private anyConnExists(person: IPerson, related: IPerson) {
+    let existsInNew = this.newConnExists(person, related); 
+    let existsInAll = this.connExists(person, related);
     return existsInNew || existsInAll;
   }
-  anyConExists(person: IPerson, related: IPerson) {
+  connExists(person: IPerson, related: IPerson) {
     return this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id);
   }
 
@@ -194,7 +192,7 @@ export class CalculationsService {
   private farRelation() {
     let relation = eRel.FarRel;
     let newUndec = this.createConnection(relation); //the creation process checks the existence of the proposed conn to be created.
-    if (newUndec != null) this._undecidedConns.push(newUndec);
+    if (newUndec != null) this.pushToUndecided(newUndec);
     return relation;
   }
 
@@ -206,9 +204,14 @@ export class CalculationsService {
       `So ${this._relatedConn!.RelatedPerson!.FullName} is ${this._personConn!.TargetPerson!.FullName}'s ${eRel[relation]}`;
   }
   private undecidedRelation(relation1: eRel, relation2: eRel) {
-    let undecidedRelation = this.createConnection(eRel.Undecided, [{ Id: relation1, Name: eRel[relation1] }, { Id: relation2, Name: eRel[relation2] }]);
-    if (undecidedRelation != null) this._undecidedConns.push(undecidedRelation);
+    let undecidedConn = this.createConnection(eRel.Undecided, [{ Id: relation1, Name: eRel[relation1] }, { Id: relation2, Name: eRel[relation2] }]);
+    if (undecidedConn != null) this.pushToUndecided(undecidedConn);
     return eRel.Undecided;
+  }
+  private pushToUndecided(undecidedConn: IConnection) {
+
+    if (!this.newConnExists(undecidedConn.TargetPerson!, undecidedConn.RelatedPerson!))
+    this._undecidedConns.push(undecidedConn);
   }
 
   // relation Checkers
