@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { delay, timer } from 'rxjs';
 import { CacheService, eStorageKeys, eStorageType } from '../services/cache.service';
-import { CalculationsService } from '../services/calculations.service';
 import { ConnectionsService } from '../services/connections.service';
 import { StaticDataService } from '../services/static-data.service';
 import { WaiterService } from '../services/waiter.service';
 import { INameToId } from '../shared/common.model';
-import { eGender, eRel, IConnection, IFlatConnection, IPerson } from './person.model';
+import { eGender, eRel, IConnection, IConnectionSummary, IFlatConnection, IPerson } from './person.model';
 import { PersonsRepositoryService } from './persons-repository.service';
 
 @Component({
@@ -28,6 +27,7 @@ export class AddPersonComponent {
   );
   foundConns: IConnection[] = [];
   undecidedConns: IConnection[] = [];
+  connsSumm: IConnectionSummary[] = [];
 
   inFoundTab: boolean = false;
   inUndecidedTab: boolean = false;
@@ -38,11 +38,14 @@ export class AddPersonComponent {
   relations: INameToId[] = [];
 
   spinnerWelcome: boolean = false;
-  welcomeDisabled: boolean = false;
   spinnerVerify: boolean = false;
-  verifyDisabled: boolean = true;
   spinnerComplete: boolean = false;
+
+  welcomeDisabled: boolean = false;
+  verifyDisabled: boolean = true;
   completeDisabled: boolean = true;
+
+  verifyVisible: boolean = false;
 
   constructor(
     private personsRepo: PersonsRepositoryService,
@@ -91,13 +94,8 @@ export class AddPersonComponent {
   async next(credentials: any) {
     this.spinnerWelcome = true;
 
-    // fill new connection
-    this.newConnection = this.connsSvc.fillNewConnection(this.newConnection!, this.persons!, this.inputs());
-
-    // calc other connections
-    let newConnections = this.connsSvc.calcConnections(this.newConnection, this.persons!, this.undecidedConns);
-
-    this.connsSvc.setLocalCache(this.persons!, newConnections); // between steps
+    // process connections
+    let newConnections = this.connsSvc.calcConnections(this.newConnection!, this.persons!, this.inputs(), this.undecidedConns);
 
     await this.wait.seconds(2);
 
@@ -105,6 +103,7 @@ export class AddPersonComponent {
     this.spinnerWelcome = false;
     this.welcomeDisabled = true;
     this.verifyDisabled = false;
+    this.verifyVisible = true;
     this.inFoundTab = true;
 
     //debugger;
@@ -159,7 +158,16 @@ export class AddPersonComponent {
   }
 
   async final(credentials: any) {
+    this.spinnerVerify = true;
+    this.verifyDisabled = true;
 
+    await this.wait.seconds(2);
+
+    this.completeDisabled = false;
+
+    this.connsSumm = this.connsSvc.summarize(this.foundConns, this.undecidedConns);
+
+    this.spinnerVerify = false;
   }
 
   private async backToWelcome() {

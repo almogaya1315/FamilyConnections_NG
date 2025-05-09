@@ -30,6 +30,7 @@ export interface ILoginResponse {
 }
 
 export interface IConnection {
+  Id: string,
   TargetPerson: IPerson | null,
   RelatedPerson: IPerson | null,
   Relationship: IRelationshipInfo | null,
@@ -37,7 +38,8 @@ export interface IConnection {
   Confirmed: boolean,
   RelationStr: string,
   UndecidedOptions: INameToId[],
-  SelectedUndecided: INameToId | null
+  SelectedUndecided: INameToId | null,
+  OppositeConnId: string | null
 }
 
 export interface IFlatConnection {
@@ -54,6 +56,11 @@ export interface IRelationshipInfo {
   //Error: string,
 }
 
+export interface IConnectionSummary {
+  Desc: string
+}
+
+//UndecidedRel -> Step, InLaw, Great, Ex, Far
 export enum eRel {
   Mother = 0,
   Father = 1,

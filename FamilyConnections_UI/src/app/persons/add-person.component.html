@@ -88,7 +88,7 @@
     <h4 class="sectionHeader">VERIFY CONNECTIONS...</h4>
     <div class="divider" style="margin-bottom:0px"></div>
 
-    <div *ngIf="!verifyDisabled" class="sectionContainer verifyContainer">
+    <div *ngIf="verifyVisible" class="sectionContainer verifyContainer">
 
       <div *ngIf="spinnerVerify" class="loader-overlay">
         <div class="spinner"></div>
@@ -165,11 +165,18 @@
   </div>
 
   <!--complete-->
-  <div class="complete-disabled">
+  <div [ngClass]="{'complete': !completeDisabled, 'complete-disabled': completeDisabled}" class="complete-disabled">
     <h4 class="sectionHeader">COMPLETE ADDITION...</h4>
-    <hr />
-    <div style="width:300px">
-
+    <div class="divider"></div>
+    <div *ngIf="!completeDisabled" class="sectionContainer">
+      <h5>Summary</h5>
+      <div class="found-conns">
+        <div *ngFor="let summ of connsSumm" class="found-conn">
+          <div>
+            {{ summ!.Desc }}
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
