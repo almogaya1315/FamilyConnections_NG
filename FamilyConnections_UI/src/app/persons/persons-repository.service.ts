@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@angular/core';
 import { BehaviorSubject, buffer, map, Observable, of } from 'rxjs';
 
-import { eGender, IFlatConnection, ILoginResponse, IPerson, IPersonCredentials } from './person.model';
+import { eGender, IApiResponse, IFlatConnection, ILoginResponse, IPerson, IPersonCredentials } from './person.model';
 import { HttpClient } from '@angular/common/http';
 
 
@@ -50,13 +50,19 @@ export class PersonsRepositoryService {
       }));
   }
 
-
-
   getRelatives(flatConnections: IFlatConnection[]) {
     return this.http.post<IPerson[]>('/api/relatives', flatConnections);
   }
 
   getConnections() {
     return this.http.get<IFlatConnection[]>('/api/connections');
+  }
+
+  addPerson(newPerson: IPerson) {
+    return this.http.post<IApiResponse>('/api/addPerson', newPerson);
+  }
+
+  addConnections(newConns: IFlatConnection[]) {
+    return this.http.post<IApiResponse>('/api/addConnections', newConns);
   }
 }

@@ -29,6 +29,12 @@ export interface ILoginResponse {
   Person: IPerson
 }
 
+export interface IApiResponse {
+  Valid: boolean,
+  Message: string,
+  Data: any
+}
+
 export interface IConnection {
   Id: string,
   TargetPerson: IPerson | null,
@@ -60,6 +66,25 @@ export interface IConnectionSummary {
   Desc: string,
   TargetConnId: string,
   OppositeConnId: string
+}
+
+export interface IProcessFrame {
+  Title: string,
+  PersonAddition: string,
+  NewConnsAddition: string
+}
+
+export enum eProcessFrameSegment {
+  Empty = "",
+  Title = "Successfully finished the 'New member addition' process!",
+  personAddition = "",
+  personAddition_InProgress = "New person addition to Database in progress...",
+  personAddition_Done = "New person addition to database completed successfully!",
+  personAddition_Fail = "New person addition to database failed!",
+  newConnsAddition = "",
+  newConnsAddition_InProgress = "New connections addition to Database in progress...",
+  newConnsAddition_Done = "New connections addition to database completed successfully!",
+  newConnsAddition_Fail = "New connections addition to database failed!",
 }
 
 //UndecidedRel -> Step, InLaw, Great, Ex, Far

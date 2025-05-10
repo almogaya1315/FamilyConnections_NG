@@ -5,7 +5,7 @@ import { ConnectionsService } from '../services/connections.service';
 import { StaticDataService } from '../services/static-data.service';
 import { WaiterService } from '../services/waiter.service';
 import { INameToId } from '../shared/common.model';
-import { eGender, eRel, IConnection, IConnectionSummary, IFlatConnection, IPerson } from './person.model';
+import { eGender, eProcessFrameSegment, eRel, IConnection, IConnectionSummary, IFlatConnection, IPerson, IProcessFrame } from './person.model';
 import { PersonsRepositoryService } from './persons-repository.service';
 
 @Component({
@@ -44,6 +44,7 @@ export class AddPersonComponent {
   verifyVisible: boolean = false;
   completeVisible: boolean = false;
   processingFrameVisible: boolean = false;
+  processFrame: IProcessFrame | null = null;
 
   constructor(
     private personsRepo: PersonsRepositoryService,
@@ -52,9 +53,11 @@ export class AddPersonComponent {
     private connsSvc: ConnectionsService,
     private wait: WaiterService) {
 
-    this.countries = staticData.getCountries();
-    this.genders = staticData.getGenders();
-    this.relations = staticData.getRelations();
+    this.countries = this.staticData.getCountries();
+    this.genders = this.staticData.getGenders();
+    this.relations = this.staticData.getRelations();
+
+    this.initProcessFrame();
 
     this.persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session)!;
     this.personsItems = this.persons!.map(p => ({
@@ -77,6 +80,14 @@ export class AddPersonComponent {
   }
 
   compareById = (a: any, b: any) => a?.Id === b?.Id;
+
+  private initProcessFrame() {
+    this.processFrame = {
+      Title: eProcessFrameSegment.Title,
+      PersonAddition: eProcessFrameSegment.Empty,
+      NewConnsAddition: eProcessFrameSegment.Empty
+    };
+  }
 
   private inputs() {
     return {
@@ -128,7 +139,7 @@ export class AddPersonComponent {
     } else if (tab == 'undecided' && !this.inUndecidedTab) {
       this.inUndecidedTab = true;
       this.inFoundTab = false;
-    } 
+    }
   }
 
   async backTo(section: string) {
@@ -136,7 +147,7 @@ export class AddPersonComponent {
       await this.backToWelcome();
     } else if (section == 'verify') {
       await this.backToVerify();
-    } 
+    }
   }
 
   allUndecidedSelected(): boolean {
@@ -165,13 +176,44 @@ export class AddPersonComponent {
     await this.wait.seconds(1);
     this.processingFrameVisible = true;
 
-    // set persistency texts -> in last step completion
-    //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
-    //this.personsRepo.addConnections(newConnections);
+    //set persistency texts
+    this.save(eProcessFrameSegment.personAddition);
+    this.save(eProcessFrameSegment.newConnsAddition);
 
     //UI that explains the following action to accure.
     //a certain api call to wasap, to all required persons for authentication
     //building a live api reciever for all responses, and managing person's permission into the website
+  }
+
+  private async save(segment: eProcessFrameSegment) {
+    switch (segment) {
+
+      case eProcessFrameSegment.personAddition:
+        this.processFrame!.PersonAddition = eProcessFrameSegment.personAddition_InProgress;
+        let segmentPersonAddition: eProcessFrameSegment;
+        this.personsRepo.addPerson(this.newConnection!.TargetPerson!).subscribe(res => {
+          if (res.Valid)
+            segmentPersonAddition = eProcessFrameSegment.personAddition_Done;
+          else segmentPersonAddition = eProcessFrameSegment.personAddition_Fail;
+        });
+        await this.wait.seconds(2);
+        this.processFrame!.PersonAddition = segmentPersonAddition!;
+        break;
+
+      case eProcessFrameSegment.newConnsAddition:
+        this.processFrame!.NewConnsAddition = eProcessFrameSegment.newConnsAddition_InProgress;
+        let segmentNewConnsAddition: eProcessFrameSegment;
+        let flats: IFlatConnection[] = [];
+        this.foundConns.forEach(c => flats.push(c.Flat!));
+        this.personsRepo.addConnections(flats).subscribe(res => {
+          if (res.Valid)
+            segmentNewConnsAddition = eProcessFrameSegment.newConnsAddition_Done;
+          else segmentNewConnsAddition = eProcessFrameSegment.newConnsAddition_Fail;
+        });
+        await this.wait.seconds(2);
+        this.processFrame!.NewConnsAddition = segmentNewConnsAddition!;
+        break;
+    }
   }
 
   private async backToWelcome() {

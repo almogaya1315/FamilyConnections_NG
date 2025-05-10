@@ -131,30 +131,18 @@ export class ConnectionsService {
     this._relatedConn!.RelationStr += this.connStr(relatedConn!);
   }
   private mapPersonFlatConnections(person: IPerson, persons: IPerson[]): IConnection[] {
-
-    try {
-
-
-
-      if (person.FlatConnections == null) {
-        let test = '';
-      }
-      return person.FlatConnections.map(f => ({
-        Id: this.createConnId(f.RelationshipId, person.Id as string, f.RelatedId.toString()),
-        TargetPerson: person,
-        RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
-        Relationship: this.newRelationship(f.RelationshipId),
-        Flat: f,
-        Confirmed: false,
-        RelationStr: '',
-        UndecidedOptions: [],
-        SelectedUndecided: null,
-        OppositeConnId: null
-      }));
-    } catch (e) {
-      let test = '';
-    }
-    return [];
+    return person.FlatConnections.map(f => ({
+      Id: this.createConnId(f.RelationshipId, person.Id as string, f.RelatedId.toString()),
+      TargetPerson: person,
+      RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
+      Relationship: this.newRelationship(f.RelationshipId),
+      Flat: f,
+      Confirmed: false,
+      RelationStr: '',
+      UndecidedOptions: [],
+      SelectedUndecided: null,
+      OppositeConnId: null
+    }));
   }
   private mapFlatConnections(flatConns: IFlatConnection[], persons: IPerson[]): IConnection[] {
     let flatMap = flatConns.map(f => ({

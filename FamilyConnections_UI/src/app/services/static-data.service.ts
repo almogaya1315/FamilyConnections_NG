@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { eRel } from '../persons/person.model';
+import { eProcessFrameSegment, eRel } from '../persons/person.model';
 import { INameToId } from '../shared/common.model';
 
 @Injectable({

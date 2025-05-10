@@ -78,6 +78,35 @@ function setPersonConnections(person, connections) {
   return personConnections;
 }
 
+app.post("/api/addPerson", (req, res) => {
+  const filePath = '../../src/assets/texts/AllPersons.txt';
+  var apiRes = { Valid: true, Message: '', Data: null };
+  try {
+    var newPerson = req.body;
+    var personJson = JSON.stringify(newPerson);
+    fileSystem.appendFileSync(filePath, personJson + '\n', "utf-8");
+    apiRes.Message = newPerson.FullName + ' was added!';
+  } catch (e) {
+    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
+  }
+  res.send(apiRes);
+})
+
+app.post("/api/addConnections", (req, res) => {
+  console.log(`newConns: ${req.body}`);
+  const filePath = '../../src/assets/texts/AllConnections.txt';
+  var apiRes = { Valid: true, Message: '', Data: null };
+  try {
+    var newConns = req.body;
+    var newConnsJson = JSON.stringify(newConns);
+    fileSystem.appendFileSync(filePath, newConnsJson + '\n', "utf-8");
+    apiRes.Message = newConns.length + ' connections were added!';
+  } catch (e) {
+    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
+  }
+  res.send(apiRes);
+})
+
 app.post("/api/validateLogin", (req, res) => {
   var persons = getPersonsArray().personsArray;
   var loginCredentials = req.body;
