@@ -43,6 +43,7 @@ export class AddPersonComponent {
 
   verifyVisible: boolean = false;
   completeVisible: boolean = false;
+  processingFrameVisible: boolean = false;
 
   constructor(
     private personsRepo: PersonsRepositoryService,
@@ -167,6 +168,15 @@ export class AddPersonComponent {
     this.connsSumm = this.connsSvc.summarize(this.foundConns, this.undecidedConns);
 
     this.spinnerVerify = false;
+  }
+
+  async complete() {
+    this.completeDisabled = true;
+    this.spinnerWelcome = true;
+    this.spinnerVerify = true;
+    this.spinnerComplete = true;
+    await this.wait.seconds(1);
+    this.processingFrameVisible = true;
   }
 
   private async backToWelcome() {
