@@ -98,14 +98,11 @@ export class AddPersonComponent {
 
     await this.wait.seconds(2);
 
-    // handle step 2 UI -> verify founds and possible complexity
     this.spinnerWelcome = false;
     this.welcomeDisabled = true;
     this.verifyDisabled = false;
     this.verifyVisible = true;
     this.inFoundTab = true;
-
-    //debugger;
 
     this.foundConns = newConnections.filter(c =>
       c.Relationship?.Id !== eRel.Undecided &&
@@ -122,16 +119,6 @@ export class AddPersonComponent {
     //  c.UndecidedOptions = [{ Id: eRel.StepMother, Name: eRel[eRel.StepMother] }, { Id: eRel.StepFather, Name: eRel[eRel.StepFather] }]
     //});
     //testing
-
-    //this.undecidedConns = this.undecidedConns.filter(c => c.Relationship?.Id != eRel.FarRel);
-
-    //debugger;
-
-    // handle step 3 UI -> summary
-
-    // set persistency texts -> in last step completion
-    //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
-    //this.personsRepo.addConnections(newConnections);
   }
 
   goToTab(tab: string) {
@@ -177,6 +164,14 @@ export class AddPersonComponent {
     this.spinnerComplete = true;
     await this.wait.seconds(1);
     this.processingFrameVisible = true;
+
+    // set persistency texts -> in last step completion
+    //this.personsRepo.addPerson(this.newConnection!.TartgetPerson);
+    //this.personsRepo.addConnections(newConnections);
+
+    //UI that explains the following action to accure.
+    //a certain api call to wasap, to all required persons for authentication
+    //building a live api reciever for all responses, and managing person's permission into the website
   }
 
   private async backToWelcome() {
