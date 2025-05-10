@@ -8,7 +8,7 @@ import { CacheService, eStorageKeys, eStorageType } from './cache.service';
   providedIn: 'root',
 })
 export class ConnectionsService {
-  private _personConn: IConnection | null = null;
+  private _personConn: IConnection | null = null; 
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
   private _newConns: IConnection[] = [];
@@ -57,11 +57,13 @@ export class ConnectionsService {
           let relation: eRel | null;
           let personConn = personConns.find(pc => pc.RelatedPerson!.Id == relatedConn.TargetPerson!.Id);
           this.initCalculation(personConn!, relatedConn, persons, undecidedConns);
-
-          if (!this.connExists(person, relatedConn.RelatedPerson!)) {
+          if (!this.anyConnExists(person, relatedConn.RelatedPerson!)) { //this.anyConnExists - 1st call
             relation = this.findRelation();
             var relName = eRel[relation!];
-            this.connectBetween(person, relatedConn.RelatedPerson, relation, false);
+            //this.anyConnExists - 2nd call, from inside this.connectBetween, because of recursion call for opposite relation
+            //when the relation is set to far/undec, in this.findRelation, this._undecidedConns gets filled with a new connection,
+            //and this.anyConnExists will prevent this.connectBetween from creating another connection
+            this.connectBetween(person, relatedConn.RelatedPerson, relation, false); 
           }
         });
 
@@ -73,6 +75,7 @@ export class ConnectionsService {
     return this._newConns;
   }
 
+  //opposites
   private pushOpposites(newConn: IConnection) {
     newConn.RelationStr = this.connStr(newConn);
     this._newConns.push(newConn);
@@ -82,11 +85,12 @@ export class ConnectionsService {
   }
   private connStr(conn: IConnection, opposite: boolean = false): string {
     let str = '';
-    if (opposite) {
+    if (opposite && conn.TargetPerson?.FullName) {
       str = `You are ${conn.TargetPerson?.FullName}'s' ${eRel[conn.Relationship!.Id!]}'`;
-    } else {
+    } else if (conn.RelatedPerson?.FullName) {
       str = `${conn.RelatedPerson?.FullName} is your ${eRel[conn.Relationship!.Id!]}'`;
     }
+
     return str;
   }
   private oppositeConn(con: IConnection): IConnection {
@@ -94,6 +98,7 @@ export class ConnectionsService {
     return this.createConnection(con.RelatedPerson!, con.TargetPerson!, oppositeRel)!;
   }
 
+  //mapping
   private initCalculation(personConn: IConnection, relatedConn: IConnection, persons: IPerson[], unDecs: IConnection[]) {
 
     let flatConns: IFlatConnection[] = this.cacheSvc.getCache(eStorageKeys.AllLocalConnections, eStorageType.Session)!;
@@ -101,12 +106,15 @@ export class ConnectionsService {
     this._personConn = personConn;
     this._relatedConn = relatedConn;
     this._conns = this.mapFlatConnections(flatConns, persons);;
-    this._newConns = [];
+    this._newConns = this._newConns == null ? [] : this._newConns;
     this._undecidedConns = unDecs;
+
+    this._personConn!.RelationStr += this.connStr(personConn!);
+    this._relatedConn!.RelationStr += this.connStr(relatedConn!);
   }
   private mapPersonFlatConnections(person: IPerson, persons: IPerson[]): IConnection[] {
     return person.FlatConnections.map(f => ({
-      Id: this.createConnId(f.RelationshipId),
+      Id: this.createConnId(f.RelationshipId, person.Id as string, f.RelatedId.toString()),
       TargetPerson: person,
       RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
       Relationship: this.newRelationship(f.RelationshipId),
@@ -133,9 +141,7 @@ export class ConnectionsService {
     }));
     return flatMap;
   }
-  private createConnId(relationId: number): string {
-    let targetId = '-1';
-    let relatedId = '-1';
+  private createConnId(relationId: number, targetId: string = '-1', relatedId: string = '-1'): string {
     if (this._personConn != null && this._relatedConn != null) {
       targetId = `${this._personConn!.TargetPerson!.Id}`;
       relatedId = `${this._relatedConn!.RelatedPerson!.Id}`;
@@ -151,6 +157,7 @@ export class ConnectionsService {
     return rel;
   }
 
+  //existance
   private connExists(person: IPerson, related: IPerson) {
     return this._conns.some(c => c.TargetPerson?.Id == person.Id && c.RelatedPerson?.Id == related.Id);
   }
@@ -171,6 +178,7 @@ export class ConnectionsService {
     return existsInNew || existsInAll || existsInUndec;
   }
 
+  //connecting
   private findRelation(): eRel | null {
     let relation: eRel | null = this.checkParent();
     if (!relation) relation = this.checkChild();
@@ -205,9 +213,9 @@ export class ConnectionsService {
     }
   }
   createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, options: INameToId[] = []): IConnection | null {
-    let id = this.createConnId(relation);
+    let id = this.createConnId(relation, person.Id as string, relatedPerson.Id as string);
     let newRel = this.newRelationship(relation as number);
-    let relStr = this.relationStr(relation);
+    //let relStr = this.relationStr(relation);
     var flatCon: IFlatConnection = {
       TargetId: person.Id as number,
       RelatedId: relatedPerson?.Id as number,
@@ -221,22 +229,27 @@ export class ConnectionsService {
       Relationship: newRel,
       Flat: flatCon,
       Confirmed: false,
-      RelationStr: relStr,
+      RelationStr: '', //relStr,
       UndecidedOptions: options,
       SelectedUndecided: { Id: -1, Name: '' },
       OppositeConnId: null
     }
-    conn!.TargetPerson!.FlatConnections.push(flatCon);
+    conn.RelationStr = this.connStr(conn);
+    if (flatCon.TargetId! != -1 && flatCon.RelatedId != -1)
+      conn.TargetPerson!.FlatConnections.push(flatCon);
     return conn;
   }
   private relationStr(relation: eRel) {
-    if (this._personConn == null || this._relatedConn == null) return '';
+    if (this._personConn == null || this._relatedConn == null) {
+      return '';
+    }
 
     return `${this._personConn!.TargetPerson!.FullName}'s ${this._personConn!.Relationship!.Type}, ${this._personConn!.RelatedPerson!.FullName}, ` +
       `Has a ${this._relatedConn!.Relationship!.Type}, ` +
       `So ${this._relatedConn!.RelatedPerson!.FullName} is ${this._personConn!.TargetPerson!.FullName}'s ${eRel[relation]}`;
   }
 
+  //summary
   summarize(foundConns: IConnection[], undecConns: IConnection[]): IConnectionSummary[] {
     let summs: IConnectionSummary[] = [];
     let allConns: IConnection[] = [];
@@ -245,19 +258,12 @@ export class ConnectionsService {
 
     allConns.forEach(c => {
       let oppConn = allConns.find(c => c.OppositeConnId == c.Id);
-      let desc = this.setSummaryDescription(c, oppConn!);
+      let desc = this.calcSummaryDescription(c, oppConn!);
       let summ: IConnectionSummary = { Desc: desc };
       summs.push(summ);
     });
 
     return summs;
-  }
-  private setSummaryDescription(conn: IConnection, oppositeConn: IConnection): string {
-    let desc = '';
-
-
-
-    return desc;
   }
 
   // relation Checkers
@@ -460,9 +466,6 @@ export class ConnectionsService {
   private checkSiblingInLaw() {
     let relation: eRel | null = null;
 
-    //FarRelation
-    relation = this.farRelation();
-
     //person's SiblingInLaw
     if (this.hasSiblingInLaw(this._personConn!)) {
       //HasParentSibling
@@ -512,7 +515,6 @@ export class ConnectionsService {
   private isFemale() {
     return this._relatedConn!.RelatedPerson!.Gender == eGender.Female;
   }
-
   private isGrandParent() {
     return this.isFemale() ? eRel.GrandMother : eRel.GrandFather;
   }
@@ -639,7 +641,13 @@ export class ConnectionsService {
 
     return oppositeRel;
   }
+  private calcSummaryDescription(conn: IConnection, oppositeConn: IConnection): string {
+    let desc = '';
 
+
+
+    return desc;
+  }
 
   //far & undec
   private farRelation() {
