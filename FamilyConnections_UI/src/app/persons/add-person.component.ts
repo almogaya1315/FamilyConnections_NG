@@ -20,11 +20,7 @@ export class AddPersonComponent {
   selectedRelated: INameToId = { Id: -1, Name: '' };
   selectedRelation: INameToId = { Id: -1, Name: '' };
 
-  newConnection = this.connsSvc.createConnection(
-    this.personsRepo.getDefaultPerson(),
-    this.personsRepo.getDefaultPerson(),
-    eRel.Undecided
-  );
+  newConnection = this.connsSvc.defaultConnection();
   foundConns: IConnection[] = [];
   undecidedConns: IConnection[] = [];
   connsSumm: IConnectionSummary[] = [];
@@ -46,6 +42,7 @@ export class AddPersonComponent {
   completeDisabled: boolean = true;
 
   verifyVisible: boolean = false;
+  completeVisible: boolean = false;
 
   constructor(
     private personsRepo: PersonsRepositoryService,
@@ -93,6 +90,7 @@ export class AddPersonComponent {
 
   async next(credentials: any) {
     this.spinnerWelcome = true;
+    this.undecidedConns = [];
 
     // process connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection!, this.persons!, this.inputs(), this.undecidedConns);
@@ -148,8 +146,8 @@ export class AddPersonComponent {
   async backTo(section: string) {
     if (section == 'welcome') {
       await this.backToWelcome();
-    } else { // if (section == 'verify') {
-
+    } else if (section == 'verify') {
+      await this.backToVerify();
     } 
   }
 
@@ -164,6 +162,7 @@ export class AddPersonComponent {
     await this.wait.seconds(2);
 
     this.completeDisabled = false;
+    this.completeVisible = true;
 
     this.connsSumm = this.connsSvc.summarize(this.foundConns, this.undecidedConns);
 
@@ -173,9 +172,18 @@ export class AddPersonComponent {
   private async backToWelcome() {
     this.spinnerVerify = true;
     this.verifyDisabled = true;
+    this.connsSvc.resetOperation(this.newConnection!, this.persons!, this.undecidedConns);
+
     await this.wait.seconds(1);
     this.spinnerVerify = false;
     this.welcomeDisabled = false;
+  }
+  private async backToVerify() {
+    this.spinnerComplete = true;
+    this.completeDisabled = true;
+    await this.wait.seconds(1);
+    this.spinnerComplete = false;
+    this.verifyDisabled = false;
   }
 
   fillTest() {

@@ -74,6 +74,24 @@ export class ConnectionsService {
 
     return this._newConns;
   }
+  resetOperation(newConn: IConnection, persons: IPerson[], undecConns: IConnection[]) {
+    this._personConn = null;
+    this._relatedConn = null;
+    this._conns = [];
+    this._newConns = [];
+    this._undecidedConns = [];
+
+    persons.splice(0, 1); //delete the first person, because of reverse operation on list
+    newConn = this.defaultConnection()!;
+    undecConns = [];
+  }
+  defaultConnection() {
+    return this.createConnection(
+      this.personsRepo.getDefaultPerson(),
+      this.personsRepo.getDefaultPerson(),
+      eRel.Undecided
+    );
+  }
 
   //opposites
   private pushOpposites(newConn: IConnection) {
@@ -113,18 +131,30 @@ export class ConnectionsService {
     this._relatedConn!.RelationStr += this.connStr(relatedConn!);
   }
   private mapPersonFlatConnections(person: IPerson, persons: IPerson[]): IConnection[] {
-    return person.FlatConnections.map(f => ({
-      Id: this.createConnId(f.RelationshipId, person.Id as string, f.RelatedId.toString()),
-      TargetPerson: person,
-      RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
-      Relationship: this.newRelationship(f.RelationshipId),
-      Flat: f,
-      Confirmed: false,
-      RelationStr: '',
-      UndecidedOptions: [],
-      SelectedUndecided: null,
-      OppositeConnId: null
-    }));
+
+    try {
+
+
+
+      if (person.FlatConnections == null) {
+        let test = '';
+      }
+      return person.FlatConnections.map(f => ({
+        Id: this.createConnId(f.RelationshipId, person.Id as string, f.RelatedId.toString()),
+        TargetPerson: person,
+        RelatedPerson: persons.find(p => p.Id == f.RelatedId) ?? null,
+        Relationship: this.newRelationship(f.RelationshipId),
+        Flat: f,
+        Confirmed: false,
+        RelationStr: '',
+        UndecidedOptions: [],
+        SelectedUndecided: null,
+        OppositeConnId: null
+      }));
+    } catch (e) {
+      let test = '';
+    }
+    return [];
   }
   private mapFlatConnections(flatConns: IFlatConnection[], persons: IPerson[]): IConnection[] {
     let flatMap = flatConns.map(f => ({

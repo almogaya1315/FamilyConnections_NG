@@ -115,6 +115,7 @@
   padding-right: 100px;
   margin-right: -100px;
   box-sizing: content-box;
+  margin-left: -20px;
 }
 .verifyContainer {
   height: 90%;
@@ -192,7 +193,7 @@
     background-color: transparent;
 }
 .summary-header{
-    height: 50px;
+    height: 30px;
 }
 .summary-conns {
   width: 110%;
