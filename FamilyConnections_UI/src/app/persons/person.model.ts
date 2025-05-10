@@ -57,7 +57,9 @@ export interface IRelationshipInfo {
 }
 
 export interface IConnectionSummary {
-  Desc: string
+  Desc: string,
+  TargetConnId: string,
+  OppositeConnId: string
 }
 
 //UndecidedRel -> Step, InLaw, Great, Ex, Far

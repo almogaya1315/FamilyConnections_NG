@@ -168,13 +168,22 @@
   <div [ngClass]="{'complete': !completeDisabled, 'complete-disabled': completeDisabled}" class="complete-disabled">
     <h4 class="sectionHeader">COMPLETE ADDITION...</h4>
     <div class="divider"></div>
-    <div *ngIf="!completeDisabled" class="sectionContainer">
-      <h5>Summary</h5>
-      <div class="found-conns">
-        <div *ngFor="let summ of connsSumm" class="found-conn">
+    <div *ngIf="!completeDisabled" class="sectionContainer completeContainer">
+      <h5 class="summary-header">Summary</h5>
+      <div class="summary-conns">
+        <div *ngFor="let summ of connsSumm" class="summary-conn">
           <div>
-            {{ summ!.Desc }}
+            &bull; {{ summ!.Desc }}
           </div>
+        </div>
+      </div>
+
+      <div class="complete-bottom">
+        <br />
+        <div class="divider"></div>
+        <div class="form-group">
+          <input type="submit" value="Complete" class="btn btn-primary nextBtn"/>
+          <input type="button" value="Back" class="btn btn-primary" (click)="backTo('verify')" />
         </div>
       </div>
     </div>

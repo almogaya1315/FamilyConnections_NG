@@ -8,7 +8,7 @@ import { CacheService, eStorageKeys, eStorageType } from './cache.service';
   providedIn: 'root',
 })
 export class ConnectionsService {
-  private _personConn: IConnection | null = null; 
+  private _personConn: IConnection | null = null;
   private _relatedConn: IConnection | null = null;
   private _conns: IConnection[] = [];
   private _newConns: IConnection[] = [];
@@ -63,7 +63,7 @@ export class ConnectionsService {
             //this.anyConnExists - 2nd call, from inside this.connectBetween, because of recursion call for opposite relation
             //when the relation is set to far/undec, in this.findRelation, this._undecidedConns gets filled with a new connection,
             //and this.anyConnExists will prevent this.connectBetween from creating another connection
-            this.connectBetween(person, relatedConn.RelatedPerson, relation, false); 
+            this.connectBetween(person, relatedConn.RelatedPerson, relation, false);
           }
         });
 
@@ -215,6 +215,7 @@ export class ConnectionsService {
   createConnection(person: IPerson, relatedPerson: IPerson, relation: eRel, options: INameToId[] = []): IConnection | null {
     let id = this.createConnId(relation, person.Id as string, relatedPerson.Id as string);
     let newRel = this.newRelationship(relation as number);
+    let oppConnId = this.calcOppositeConnId(id, person.Gender)!;
     //let relStr = this.relationStr(relation);
     var flatCon: IFlatConnection = {
       TargetId: person.Id as number,
@@ -232,7 +233,7 @@ export class ConnectionsService {
       RelationStr: '', //relStr,
       UndecidedOptions: options,
       SelectedUndecided: { Id: -1, Name: '' },
-      OppositeConnId: null
+      OppositeConnId: oppConnId
     }
     conn.RelationStr = this.connStr(conn);
     if (flatCon.TargetId! != -1 && flatCon.RelatedId != -1)
@@ -256,14 +257,20 @@ export class ConnectionsService {
     foundConns.forEach(c => { allConns.push(c); });
     undecConns.forEach(c => { allConns.push(c); });
 
-    allConns.forEach(c => {
-      let oppConn = allConns.find(c => c.OppositeConnId == c.Id);
-      let desc = this.calcSummaryDescription(c, oppConn!);
-      let summ: IConnectionSummary = { Desc: desc };
-      summs.push(summ);
+    allConns.forEach(conn => {
+      let oppConn = allConns.find(c => c.OppositeConnId == conn.Id);
+      //let oppConn = allConns.find(c => c.Id == conn.OppositeConnId);
+      let desc = this.calcSummaryDescription(conn, oppConn!);
+      let summ: IConnectionSummary = { Desc: desc, TargetConnId: conn.Id, OppositeConnId: oppConn?.Id as string };
+      if (!this.summaryExists(summs, summ)) summs.push(summ);
     });
 
     return summs;
+  }
+  private summaryExists(summs: IConnectionSummary[], summ: IConnectionSummary) {
+    return summs.some(s =>
+      (s.TargetConnId == summ.TargetConnId && s.OppositeConnId == summ.OppositeConnId) ||
+      (s.TargetConnId == summ.OppositeConnId && s.OppositeConnId == summ.TargetConnId));
   }
 
   // relation Checkers
@@ -555,6 +562,14 @@ export class ConnectionsService {
     return this.isFemale() ? eRel.Wife : eRel.Husband;
   }
 
+  //are methods
+  private areCousins(conn: IConnection, oppConn: IConnection) {
+    return conn.Relationship?.Id == eRel.Cousin && oppConn.Relationship?.Id == eRel.Cousin;
+  }
+  private areFar(conn: IConnection, oppConn: IConnection) {
+    return conn.Relationship?.Id == eRel.FarRel && oppConn.Relationship?.Id == eRel.FarRel;
+  }
+
   //calc methods
   oppositeRelation(relation: eRel, gender: eGender): eRel {
     let oppositeRel = eRel.FarRel;
@@ -641,10 +656,26 @@ export class ConnectionsService {
 
     return oppositeRel;
   }
+  private calcOppositeConnId(connId: string, personGen: eGender) {
+    let segments = connId.split('|');
+    let targetId = segments[0];
+    let relatedId = segments[1];
+    let relationId = parseInt(segments[2]);
+    let oppRelId = this.oppositeRelation(relationId as eRel, personGen);
+    return this.createConnId(oppRelId, relatedId, targetId);
+  }
   private calcSummaryDescription(conn: IConnection, oppositeConn: IConnection): string {
     let desc = '';
 
+    let newInitialConn = this._newConns[0];
+    let target = conn.TargetPerson?.Id == newInitialConn?.TargetPerson?.Id ? 'You' : conn.TargetPerson?.FullName;
 
+    if (this.areCousins(conn, oppositeConn)) {
+      desc = `${target} and ${oppositeConn.TargetPerson?.FullName} are ${eRel[eRel.Cousin]}s`;
+    }
+    else if (this.areFar(conn, oppositeConn)) {
+      desc = `${target} and ${conn.RelatedPerson?.FullName} are too far apart`;
+    }
 
     return desc;
   }

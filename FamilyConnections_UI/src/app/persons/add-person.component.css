@@ -191,7 +191,29 @@
 .tab-not-focus {
     background-color: transparent;
 }
-
+.summary-header{
+    height: 50px;
+}
+.summary-conns {
+  width: 110%;
+}
+.summary-conn {
+    height: 40px;
+    font-weight: bold;
+}
+.completeContainer {
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 100%;
+  flex: 1 1 auto;
+}
+.complete-bottom {
+  margin-top: auto;
+  flex-shrink: 0;
+  padding-top: 10px;
+}
 
 /*loader overlay spinner*/
 .loader-overlay {
