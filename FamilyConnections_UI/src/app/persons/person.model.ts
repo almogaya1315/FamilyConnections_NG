@@ -71,20 +71,22 @@ export interface IConnectionSummary {
 export interface IProcessFrame {
   Title: string,
   PersonAddition: string,
-  NewConnsAddition: string
+  NewConnsAddition: string,
+  NextActions: string,
+  AuthReqSent: string
 }
 
 export enum eProcessFrameSegment {
   Empty = "",
   Title = "Successfully finished the 'New member addition' process!",
-  personAddition = "",
-  personAddition_InProgress = "New person addition to Database in progress...",
-  personAddition_Done = "New person addition to database completed successfully!",
-  personAddition_Fail = "New person addition to database failed!",
-  newConnsAddition = "",
-  newConnsAddition_InProgress = "New connections addition to Database in progress...",
-  newConnsAddition_Done = "New connections addition to database completed successfully!",
-  newConnsAddition_Fail = "New connections addition to database failed!",
+  PersonAddition_InProgress = "New person addition to Database in progress...",
+  PersonAddition_Done = "New person addition to database completed successfully!",
+  PersonAddition_Fail = "New person addition to database failed!",
+  NewConnsAddition_InProgress = "New connections addition to Database in progress...",
+  NewConnsAddition_Done = "New connections addition to database completed successfully!",
+  NewConnsAddition_Fail = "New connections addition to database failed!",
+  NextActions = "The next step to gain access to the connection pool, is to be recodnized by your relatives.",
+  AuthReqSent = "All your close relatives have been sent a wasap request, to authenticate your addition."
 }
 
 //UndecidedRel -> Step, InLaw, Great, Ex, Far

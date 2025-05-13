@@ -85,7 +85,9 @@ export class AddPersonComponent {
     this.processFrame = {
       Title: eProcessFrameSegment.Title,
       PersonAddition: eProcessFrameSegment.Empty,
-      NewConnsAddition: eProcessFrameSegment.Empty
+      NewConnsAddition: eProcessFrameSegment.Empty,
+      NextActions: eProcessFrameSegment.Empty,
+      AuthReqSent: eProcessFrameSegment.Empty
     };
   }
 
@@ -103,6 +105,9 @@ export class AddPersonComponent {
   async next(credentials: any) {
     this.spinnerWelcome = true;
     this.undecidedConns = [];
+
+    //existance validation - by name, relation & related authorization --> prevents progress to persistency if potential duplicated
+    //permissions access security
 
     // process connections
     let newConnections = this.connsSvc.calcConnections(this.newConnection!, this.persons!, this.inputs(), this.undecidedConns);
@@ -177,43 +182,50 @@ export class AddPersonComponent {
     this.processingFrameVisible = true;
 
     //set persistency texts
-    this.save(eProcessFrameSegment.personAddition);
-    this.save(eProcessFrameSegment.newConnsAddition);
+    this.saveNewPerson();
+    if (this.processFrame!.PersonAddition == eProcessFrameSegment.PersonAddition_Done)
+      this.saveNewConns();
+    else {
+      //SHOW ERROR & STOP PROCESS
+    }
+    if (this.processFrame!.NewConnsAddition == eProcessFrameSegment.NewConnsAddition_Done) {
+      //UI that explains the following action to accure.
+      this.processFrame!.NextActions = eProcessFrameSegment.NextActions;
+      await this.wait.seconds(3);
+      //a certain api call to wasap, to all required persons for authentication
+      this.processFrame!.AuthReqSent = eProcessFrameSegment.AuthReqSent;
+    } else {
+      //SHOW ERROR & STOP PROCESS
+    }
 
-    //UI that explains the following action to accure.
-    //a certain api call to wasap, to all required persons for authentication
+    //GO TO WAITING PAGE
+
     //building a live api reciever for all responses, and managing person's permission into the website
   }
 
-  private async save(segment: eProcessFrameSegment) {
-    switch (segment) {
-
-      case eProcessFrameSegment.personAddition:
-        this.processFrame!.PersonAddition = eProcessFrameSegment.personAddition_InProgress;
-        let segmentPersonAddition: eProcessFrameSegment;
-        this.personsRepo.addPerson(this.newConnection!.TargetPerson!).subscribe(res => {
-          if (res.Valid)
-            segmentPersonAddition = eProcessFrameSegment.personAddition_Done;
-          else segmentPersonAddition = eProcessFrameSegment.personAddition_Fail;
-        });
-        await this.wait.seconds(2);
-        this.processFrame!.PersonAddition = segmentPersonAddition!;
-        break;
-
-      case eProcessFrameSegment.newConnsAddition:
-        this.processFrame!.NewConnsAddition = eProcessFrameSegment.newConnsAddition_InProgress;
-        let segmentNewConnsAddition: eProcessFrameSegment;
-        let flats: IFlatConnection[] = [];
-        this.foundConns.forEach(c => flats.push(c.Flat!));
-        this.personsRepo.addConnections(flats).subscribe(res => {
-          if (res.Valid)
-            segmentNewConnsAddition = eProcessFrameSegment.newConnsAddition_Done;
-          else segmentNewConnsAddition = eProcessFrameSegment.newConnsAddition_Fail;
-        });
-        await this.wait.seconds(2);
-        this.processFrame!.NewConnsAddition = segmentNewConnsAddition!;
-        break;
-    }
+  private async saveNewPerson() {
+    this.processFrame!.PersonAddition = eProcessFrameSegment.PersonAddition_InProgress;
+    let segmentPersonAddition: eProcessFrameSegment;
+    this.personsRepo.addPerson(this.newConnection!.TargetPerson!).subscribe(res => {
+      if (res.Valid)
+        segmentPersonAddition = eProcessFrameSegment.PersonAddition_Done;
+      else segmentPersonAddition = eProcessFrameSegment.PersonAddition_Fail;
+    });
+    await this.wait.seconds(3);
+    this.processFrame!.PersonAddition = segmentPersonAddition!;
+  }
+  private async saveNewConns() {
+    this.processFrame!.NewConnsAddition = eProcessFrameSegment.NewConnsAddition_InProgress;
+    let segmentNewConnsAddition: eProcessFrameSegment;
+    let flats: IFlatConnection[] = [];
+    this.foundConns.forEach(c => flats.push(c.Flat!));
+    this.personsRepo.addConnections(flats).subscribe(res => {
+      if (res.Valid)
+        segmentNewConnsAddition = eProcessFrameSegment.NewConnsAddition_Done;
+      else segmentNewConnsAddition = eProcessFrameSegment.NewConnsAddition_Fail;
+    });
+    await this.wait.seconds(3);
+    this.processFrame!.NewConnsAddition = segmentNewConnsAddition!;
   }
 
   private async backToWelcome() {
