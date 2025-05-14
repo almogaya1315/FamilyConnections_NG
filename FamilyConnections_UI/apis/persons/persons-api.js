@@ -98,8 +98,11 @@ app.post("/api/addConnections", (req, res) => {
   var apiRes = { Valid: true, Message: '', Data: null };
   try {
     var newConns = req.body;
-    var newConnsJson = JSON.stringify(newConns);
-    fileSystem.appendFileSync(filePath, newConnsJson + '\n', "utf-8");
+    newConns.forEach(flatConn => {
+      var newFlatConJson = JSON.stringify(flatConn);
+      fileSystem.appendFileSync(filePath, newFlatConJson + '\n', "utf-8");
+    });
+    
     apiRes.Message = newConns.length + ' connections were added!';
   } catch (e) {
     apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };

@@ -10,5 +10,5 @@
 {"TargetId":4,"RelatedId":1,"RelationshipId":1}
 {"TargetId":4,"RelatedId":2,"RelationshipId":0}
 {"TargetId":4,"RelatedId":3,"RelationshipId":2}
-[{"TargetId":5,"RelatedId":2,"RelationshipId":10},{"TargetId":2,"RelatedId":5,"RelationshipId":10}]
-[{"TargetId":6,"RelatedId":2,"RelationshipId":10},{"TargetId":2,"RelatedId":6,"RelationshipId":10}]
+{"TargetId":5,"RelatedId":2,"RelationshipId":10}
+{"TargetId":2,"RelatedId":5,"RelationshipId":10}

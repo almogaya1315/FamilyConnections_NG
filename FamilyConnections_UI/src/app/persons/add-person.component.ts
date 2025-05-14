@@ -183,22 +183,24 @@ export class AddPersonComponent {
 
     //set persistency texts
     this.saveNewPerson();
-    if (this.processFrame!.PersonAddition == eProcessFrameSegment.PersonAddition_Done)
-      this.saveNewConns();
-    else {
-      //SHOW ERROR & STOP PROCESS
-    }
-    if (this.processFrame!.NewConnsAddition == eProcessFrameSegment.NewConnsAddition_Done) {
-      //UI that explains the following action to accure.
-      this.processFrame!.NextActions = eProcessFrameSegment.NextActions;
-      await this.wait.seconds(3);
-      //a certain api call to wasap, to all required persons for authentication
-      this.processFrame!.AuthReqSent = eProcessFrameSegment.AuthReqSent;
-    } else {
-      //SHOW ERROR & STOP PROCESS
-    }
+    //if (this.processFrame!.PersonAddition == eProcessFrameSegment.PersonAddition_Done)
+    this.saveNewConns();
+    //else {
+    //SHOW ERROR & STOP PROCESS
+    //}
+    //if (this.processFrame!.NewConnsAddition == eProcessFrameSegment.NewConnsAddition_Done) {
+    //UI that explains the following action to accure.
+    this.processFrame!.NextActions = eProcessFrameSegment.NextActions;
+    await this.wait.seconds(3);
+    //a certain api call to wasap, to all required persons for authentication
+    this.processFrame!.AuthReqSent = eProcessFrameSegment.AuthReqSent;
+    //} else {
+    //SHOW ERROR & STOP PROCESS
+    //}
 
     //GO TO WAITING PAGE
+    await this.wait.seconds(3);
+    //navigate to url pendingPersonAuth
 
     //building a live api reciever for all responses, and managing person's permission into the website
   }
