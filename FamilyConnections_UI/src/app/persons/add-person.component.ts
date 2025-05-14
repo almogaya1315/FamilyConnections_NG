@@ -41,9 +41,11 @@ export class AddPersonComponent {
   verifyDisabled: boolean = true;
   completeDisabled: boolean = true;
 
+  mainPageVisible: boolean = true;
   verifyVisible: boolean = false;
   completeVisible: boolean = false;
   processingFrameVisible: boolean = false;
+  pendingPersonAuthVisible: boolean = false;
   processFrame: IProcessFrame | null = null;
 
   constructor(
@@ -58,6 +60,10 @@ export class AddPersonComponent {
     this.relations = this.staticData.getRelations();
 
     this.initProcessFrame();
+
+    //testing
+    this.showPendingSection();
+    //testing
 
     this.persons = this.cacheSvc.getCache<IPerson[]>(eStorageKeys.AllLocalPersons, eStorageType.Session)!;
     this.personsItems = this.persons!.map(p => ({
@@ -87,7 +93,8 @@ export class AddPersonComponent {
       PersonAddition: eProcessFrameSegment.Empty,
       NewConnsAddition: eProcessFrameSegment.Empty,
       NextActions: eProcessFrameSegment.Empty,
-      AuthReqSent: eProcessFrameSegment.Empty
+      AuthReqSent: eProcessFrameSegment.Empty,
+      PendingPageImage: eProcessFrameSegment.PendingPageImage
     };
   }
 
@@ -198,11 +205,27 @@ export class AddPersonComponent {
     //SHOW ERROR & STOP PROCESS
     //}
 
-    //GO TO WAITING PAGE
+    //add person to cache as current user, including the registretion state
+    //and showing pending section if the person in not yet authorized 
+
     await this.wait.seconds(3);
-    //navigate to url pendingPersonAuth
+    //show pendingPersonAuth section
+    this.showPendingSection();
+
 
     //building a live api reciever for all responses, and managing person's permission into the website
+  }
+
+  private showPendingSection() {
+    this.mainPageVisible = false;
+    this.processingFrameVisible = false;
+    this.pendingPersonAuthVisible = true;
+    this.processFrame!.Title = "Your are in a pending state...";
+    this.processFrame!.PersonAddition = eProcessFrameSegment.Empty;
+    this.processFrame!.NewConnsAddition = eProcessFrameSegment.Empty;
+    this.processFrame!.NextActions = eProcessFrameSegment.NextActions;
+    this.processFrame!.AuthReqSent = eProcessFrameSegment.AuthReqSent;
+    this.processFrame!.PendingPageImage = eProcessFrameSegment.PendingPageImage; 
   }
 
   private async saveNewPerson() {
@@ -248,12 +271,12 @@ export class AddPersonComponent {
   }
 
   fillTest() {
-    this.newConnection!.TargetPerson!.FullName = "Bar Friedman";
-    this.newConnection!.TargetPerson!.DateOfBirth = new Date(1990, 1, 1);
-    this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
-    this.selectedGender = this.genders.find(g => g.Id === 1)!;
-    this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
-    this.selectedRelation = this.relations.find(r => r.Id === 10)!; //Cousin
+    //this.newConnection!.TargetPerson!.FullName = "Bar Friedman";
+    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(1990, 1, 1);
+    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    //this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    //this.selectedRelation = this.relations.find(r => r.Id === 10)!; //Cousin
 
     //this.newConnection!.TargetPerson!.FullName = "Emilia Elbaz";
     //this.newConnection!.TargetPerson!.DateOfBirth = new Date(2018, 1, 1);
@@ -280,11 +303,11 @@ export class AddPersonComponent {
     ////this.selectedRelated = this.personsItems.find(p => p.Id === 1)!;
     ////this.selectedRelation = this.relations.find(r => r.Id === 19)!; //BrotherInLaw
 
-    //this.newConnection!.TargetPerson!.FullName = "Racheli Paz";
-    //this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
-    //this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
-    //this.selectedGender = this.genders.find(g => g.Id === 1)!;
-    //this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
-    //this.selectedRelation = this.relations.find(r => r.Id === 2)!; //Sister
+    this.newConnection!.TargetPerson!.FullName = "racheli paz";
+    this.newConnection!.TargetPerson!.DateOfBirth = new Date(1996, 2, 4);
+    this.selectedPlaceOfBirth = this.countries.find(c => c.Id === 1)!;
+    this.selectedGender = this.genders.find(g => g.Id === 1)!;
+    this.selectedRelated = this.personsItems.find(p => p.Id === 2)!;
+    this.selectedRelation = this.relations.find(r => r.Id === 2)!; //sister
   }
 }

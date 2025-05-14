@@ -73,7 +73,8 @@ export interface IProcessFrame {
   PersonAddition: string,
   NewConnsAddition: string,
   NextActions: string,
-  AuthReqSent: string
+  AuthReqSent: string,
+  PendingPageImage: string
 }
 
 export enum eProcessFrameSegment {
@@ -86,7 +87,8 @@ export enum eProcessFrameSegment {
   NewConnsAddition_Done = "New connections addition to database completed successfully!",
   NewConnsAddition_Fail = "New connections addition to database failed!",
   NextActions = "The next step to gain access to the connection pool, is to be recodnized by your relatives.",
-  AuthReqSent = "All your close relatives have been sent a wasap request, to authenticate your addition."
+  AuthReqSent = "All your close relatives have been sent a wasap request, to authenticate your addition.",
+  PendingPageImage = "../../assets/images/pendingImage1.avif"
 }
 
 //UndecidedRel -> Step, InLaw, Great, Ex, Far

@@ -21,6 +21,19 @@
   font-weight: bold;
 }
 
+.pending-person {
+  width: 84%;
+  margin-left: 8%;
+  border: 5px solid #808080;
+  height: 750px;
+  padding: 15px;
+  font-weight: bold;
+}
+.pending-image {
+  margin-left: 28%;
+  margin-top: 6%;
+}
+
 .welcome-disabled {
   width: 33.33%;
   border: 1px dashed;

@@ -2,4 +2,3 @@
 {"Id":2,"FullName":"Keren Matsliah","DateOfBirth":"1984-02-05","DateOfBirthStr":"05/02/1984","Age":40,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[],"Password":"123"}
 {"Id":3,"FullName":"Gaya Matsliah","DateOfBirth":"2013-06-06","DateOfBirthStr":"06/06/2013","Age":12,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[],"Password":"123"}
 {"Id":4,"FullName":"Almog Matsliah","DateOfBirth":"2015-03-26","DateOfBirthStr":"26/03/2015","Age":10,"PlaceOfBirth":"Israel","Gender":1,"FlatConnections":[],"Password":"123"}
-{"Id":5,"FullName":"Bar Friedman","DateOfBirth":"1990-01-31T22:00:00.000Z","DateOfBirthStr":"0000-00-00","Age":0,"FlatConnections":[{"TargetId":5,"RelatedId":2,"RelationshipId":10},{"TargetId":5,"RelatedId":1,"RelationshipId":33},{"TargetId":5,"RelatedId":3,"RelationshipId":33},{"TargetId":5,"RelatedId":4,"RelationshipId":33}],"Gender":1,"Password":"","PlaceOfBirth":"Israel"}

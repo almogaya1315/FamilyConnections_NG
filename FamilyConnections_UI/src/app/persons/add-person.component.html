@@ -1,6 +1,6 @@
 
 <div class="page-wrapper">
-  <div class="page-center">
+  <div *ngIf="mainPageVisible" class="page-center">
 
     <!--welcome-->
     <div [ngClass]="{'welcome': !welcomeDisabled, 'welcome-disabled': welcomeDisabled}">
@@ -208,6 +208,18 @@
     <p>{{processFrame!.NextActions}}</p>
     <p>{{processFrame!.AuthReqSent}}</p>
   </div>
+
+  <!--pendingPersonAuth-->
+  <div *ngIf="pendingPersonAuthVisible" class="pending-person">
+    <p>{{processFrame!.Title}}</p>
+    <p>{{processFrame!.PersonAddition}}</p>
+    <p>{{processFrame!.NewConnsAddition}}</p>
+    <p>{{processFrame!.NextActions}}</p>
+    <p>{{processFrame!.AuthReqSent}}</p>
+    <div class="divider"></div>
+    <img class="pending-image" [src]="processFrame!.PendingPageImage" *ngIf="processFrame?.PendingPageImage">
+  </div>
+
 </div>
 
 
