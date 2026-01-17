@@ -2,9 +2,14 @@ const express = require("express");
 const fileSystem = require("fs");
 const cors = require("cors");
 const app = express();
+const sql = require("mssql");
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
+const connStr = process.env.DB_CONNECTION_STRING;
 app.use(express.json());
 app.use(cors());
 
+//#region api end-points
 app.get("/api/persons", async (req, res) => {
 
   //var filePath = '../../src/assets/texts/AllPersons.txt';
@@ -13,7 +18,8 @@ app.get("/api/persons", async (req, res) => {
   //});
   //res.send(personsArray);
 
-  const personsRes = getPersonsArray();
+  //const personsRes = getPersonsArray();
+  const personsRes = getPersons();
   if (personsRes.error) {
     return res.status(500).json({ message: personsRes.error })
   } else {
@@ -21,6 +27,139 @@ app.get("/api/persons", async (req, res) => {
   }
 });
 
+app.post("/api/addPerson", (req, res) => {
+  const filePath = '../../src/assets/texts/AllPersons.txt';
+  var apiRes = { Valid: true, Message: '', Data: null };
+  try {
+    var newPerson = req.body;
+    var personJson = JSON.stringify(newPerson);
+    fileSystem.appendFileSync(filePath, personJson + '\n', "utf-8");
+    apiRes.Message = newPerson.FullName + ' was added!';
+  } catch (e) {
+    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
+  }
+  res.send(apiRes);
+})
+
+app.post("/api/addConnections", (req, res) => {
+  console.log(`newConns: ${req.body}`);
+  const filePath = '../../src/assets/texts/AllConnections.txt';
+  var apiRes = { Valid: true, Message: '', Data: null };
+  try {
+    var newConns = req.body;
+    newConns.forEach(flatConn => {
+      var newFlatConJson = JSON.stringify(flatConn);
+      fileSystem.appendFileSync(filePath, newFlatConJson + '\n', "utf-8");
+    });
+
+    apiRes.Message = newConns.length + ' connections were added!';
+  } catch (e) {
+    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
+  }
+  res.send(apiRes);
+})
+
+app.post("/api/validateLogin", (req, res) => {
+  var persons = getPersonsArray().personsArray;
+  var loginCredentials = req.body;
+  var person = persons.find(p => p.FullName == loginCredentials.FullName);
+  if (person != undefined) {
+    person.FlatConnections = setPersonConnections(person);
+  }
+  var loginRes = { Valid: true, Message: 'Valid', Person: person };
+  if (person == undefined) {
+    loginRes.Valid = false;
+    loginRes.Message = "Person not found";
+    loginRes.Persony = null;
+  }
+  else if (person.Password != loginCredentials.Password) {
+    loginRes.Valid = false;
+    loginRes.Message = "Incorrect Password";
+    loginRes.Person = null;
+  }
+  res.send(loginRes);
+});
+
+app.post('/api/relatives', (req, res) => {
+  var persons = getPersonsArray().personsArray;
+  var flatConnections = req.body;
+  var relatives = [];
+  flatConnections.forEach(f => {
+    var relative = persons.find(p => p.Id == f.RelatedId)
+    relatives.push(relative);
+  });
+  res.send(relatives);
+})
+
+app.get('/api/connections', (req, res) => {
+  const connsRes = getConnectionsArray();
+  if (connsRes.error) {
+    return res.status(500).json({ message: connsRes.error })
+  } else {
+    res.send(connsRes.connectionsArray);
+  }
+})
+//#endregion
+
+//#region sql data
+async function getPersons() {
+  var output = {};
+  var persons = [];
+
+  console.log("inside personsApi.getPersons");
+
+  try {
+
+    //let connStrHC = "Server=localhost\\SQLEXPRESS;Database=FamConnsDB;Integrated Security=False;Encrypt=false;TrustServerCertificate=true";
+    //let connStrHC = "Server=DESKTOP-6TQMGKV\\SQLEXPRESS;Database=FamConnsDB;Integrated Security=False;Encrypt=false;TrustServerCertificate=true";
+    //console.log("connStrHC: " + connStrHC);
+
+    let config = {
+      user: 'lior_m',
+      password: 'Lkga1315!',
+      server: 'localhost',
+      //server: 'DESKTOP-6TQMGKV',
+      port: 52918,
+      //instanceName: 'SQLEXPRESS',
+      database: 'FamConnsDB',
+      //database: 'master',
+      options: {
+        //integratedSecurity: true,
+        encrypt: false,
+        trustServerCertificate: true,
+      },
+    }
+
+    //console.log("env connStr: " + process.env.DB_CONNECTION_STRING);
+    //console.log("connStr: " + connStr);
+    //console.log("__dirname: " + __dirname);
+
+    let conn = await sql.connect(config);
+    //.then(() => console.log('SQL CONNECTED'))
+    //.catch(err => console.error(err));
+    //let conn = await sql.connect(connStrHC);
+    console.log("connected: " + conn.connected);
+    //let res = await conn.request().query("SELECT * FROM Persons");
+    let res = await conn.request().execute("sp_GetAllPersons");
+    persons = res.recordset;
+    output = { personsArray: persons, error: null };
+  } catch (e) {
+    var message = "Error - Failed to get persons! " + e + e.stack;
+    output = { personsArray: [], error: message };
+    console.log("error: " + message);
+  }
+
+  return output;
+}
+function getConnections() {
+
+}
+function setPersonConnections() {
+
+}
+//#endregion
+
+//#region txt data
 function getPersonsArray() {
   var output = {};
   var persons = [];
@@ -77,80 +216,9 @@ function setPersonConnections(person, connections) {
   }
   return personConnections;
 }
+//#endregion
 
-app.post("/api/addPerson", (req, res) => {
-  const filePath = '../../src/assets/texts/AllPersons.txt';
-  var apiRes = { Valid: true, Message: '', Data: null };
-  try {
-    var newPerson = req.body;
-    var personJson = JSON.stringify(newPerson);
-    fileSystem.appendFileSync(filePath, personJson + '\n', "utf-8");
-    apiRes.Message = newPerson.FullName + ' was added!';
-  } catch (e) {
-    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
-  }
-  res.send(apiRes);
-})
-
-app.post("/api/addConnections", (req, res) => {
-  console.log(`newConns: ${req.body}`);
-  const filePath = '../../src/assets/texts/AllConnections.txt';
-  var apiRes = { Valid: true, Message: '', Data: null };
-  try {
-    var newConns = req.body;
-    newConns.forEach(flatConn => {
-      var newFlatConJson = JSON.stringify(flatConn);
-      fileSystem.appendFileSync(filePath, newFlatConJson + '\n', "utf-8");
-    });
-    
-    apiRes.Message = newConns.length + ' connections were added!';
-  } catch (e) {
-    apiRes = { Valid: false, Message: "Error in addPerson." + e.message, Data: null };
-  }
-  res.send(apiRes);
-})
-
-app.post("/api/validateLogin", (req, res) => {
-  var persons = getPersonsArray().personsArray;
-  var loginCredentials = req.body;
-  var person = persons.find(p => p.FullName == loginCredentials.FullName);
-  if (person != undefined) {
-    person.FlatConnections = setPersonConnections(person);
-  }
-  var loginRes = { Valid: true, Message: 'Valid', Person: person };
-  if (person == undefined) {
-    loginRes.Valid = false;
-    loginRes.Message = "Person not found";
-    loginRes.Persony = null;
-  }
-  else if (person.Password != loginCredentials.Password) {
-    loginRes.Valid = false;
-    loginRes.Message = "Incorrect Password";
-    loginRes.Person = null;
-  }
-  res.send(loginRes);
-});
-
-app.post('/api/relatives', (req, res) => {
-  var persons = getPersonsArray().personsArray;
-  var flatConnections = req.body;
-  var relatives = [];
-  flatConnections.forEach(f => {
-    var relative = persons.find(p => p.Id == f.RelatedId)
-    relatives.push(relative);
-  });
-  res.send(relatives);
-})
-
-app.get('/api/connections', (req, res) => {
-  const connsRes = getConnectionsArray();
-  if (connsRes.error) {
-    return res.status(500).json({ message: connsRes.error })
-  } else {
-    res.send(connsRes.connectionsArray);
-  }
-})
-
+//#region manual data
 //const personsObj = {
 //  1: {
 //    Id: 1,
@@ -236,6 +304,9 @@ app.get('/api/connections', (req, res) => {
 //    FlatConnections: []
 //  },
 //];
+//#endregion
 
+//#region ports
 app.listen(8081, () => console.log("API Server listening on port 8081!"));
 //app.listen(8056, () => console.log("API Server listening on port 8056!"));
+//#endregion

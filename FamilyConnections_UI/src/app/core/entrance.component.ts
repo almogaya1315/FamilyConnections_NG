@@ -15,6 +15,8 @@ export class EntranceComponent implements OnInit {
   selectedPerson: string | null = '-1';
   personsOptions: IPersonCredentials[] = [];
 
+  isAppDone: boolean = false;
+
   constructor(private router: Router, private cacheSvc: CacheService, private personsRepo: PersonsRepositoryService) { }
 
   ngOnInit() {
